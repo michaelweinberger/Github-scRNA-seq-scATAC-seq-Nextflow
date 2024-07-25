@@ -8,7 +8,7 @@ Use this Nextflow pipeline to analyse scRNA-seq data:
 - Sample integration via [Harmony](https://github.com/immunogenomics/harmony)<sup>5</sup>
 - mRNA velocity analysis via [velocyto](http://velocyto.org/velocyto.py/tutorial/cli.html#run10x-run-on-10x-chromium-samples)<sup>6</sup> and [scvelo](https://scvelo.readthedocs.io/en/stable/)<sup>7</sup>
 
-
+<br/><br/>
 
 ## Use
 
@@ -35,6 +35,7 @@ The `--input` flag gives the file path to a ".txt" or ".csv" input sample sheet,
 
 When setting the `-resume` flag, the pipeline will resume from a previous run.
 
+<br/><br/>
 
 ## Usage scenarios
 
@@ -56,6 +57,7 @@ As with starting from fastq files, cell type annotation and mRNA velocity analys
 
 Additionally, the `scRNA_velocity_file` parameter must be set for mRNA velocity analysis to be performed. This specifies the path to a file containing file paths of directories with Cellranger output BAM files, see below under "Parameters" for more details.
 
+<br/><br/>
 
 ## Parameters
 
@@ -126,6 +128,7 @@ Note: If the `input` parameter is not set, mRNA velocity analysis is only run if
 
 Note: scRNA-seq annotation and mRNA velocity analysis are only run if the `cell_type_anno` parameter is set.
 
+<br/><br/>
 
 ## Profiles
 
@@ -156,6 +159,7 @@ Pre-defined parameters:\
 Pre-defined Docker options:\
 `docker.enabled = false`
 
+<br/><br/>
 
 #### HPC_docker
 
@@ -179,6 +183,7 @@ Pre-defined Docker options:\
 `docker.enabled = true`\
 `docker.runOptions = '-u $(id -u):$(id -g)'`
 
+<br/><br/>
 
 #### standard
 
@@ -201,27 +206,26 @@ Pre-defined Docker options:\
 
 #### human
 
-Pre-defined parameters:\
 `species         = "human"`\
 `species_latin   = "homo_sapiens"`  -> Species name used in genome browser files\
 `genome          = "GRCh38"`        -> Genome name used in ensembl genome browser\
 `genome_ucsc     = "hg38"`          -> Genome name used in UCSC genome browser\
 `ensembl_version = "110"`           -> Ensembl genome browser release to use for file downloads
 
+<br/><br/>
 
 #### mouse
 
-Pre-defined parameters:\
 `species         = "mouse"`\
 `species_latin   = "mus_musculus"`\
 `genome          = "GRCm39"`\
 `genome_ucsc     = "mm39"`\
 `ensembl_version = "110"`
 
+<br/><br/>
 
 #### zebrafish
 
-Pre-defined parameters:\
 `species         = "zebrafish"`\
 `species_latin   = "danio_rerio"`\
 `genome          = "GRCz11"`\
