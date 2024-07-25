@@ -8,7 +8,7 @@ Use this Nextflow pipeline to analyse scRNA-seq data:
 - Sample integration via [Harmony](https://github.com/immunogenomics/harmony)<sup>5</sup>
 - mRNA velocity analysis via [velocyto](http://velocyto.org/velocyto.py/tutorial/cli.html#run10x-run-on-10x-chromium-samples)<sup>6</sup> and [scvelo](https://scvelo.readthedocs.io/en/stable/)<sup>7</sup>
 
-<br/><br/>
+<br/>
 
 ## Use
 
@@ -35,7 +35,7 @@ The `--input` flag gives the file path to a ".txt" or ".csv" input sample sheet,
 
 When setting the `-resume` flag, the pipeline will resume from a previous run.
 
-<br/><br/>
+<br/>
 
 ## Usage scenarios
 
@@ -49,6 +49,8 @@ If no cell type annotation file is provided via the `cell_type_anno` parameter, 
 
 With the `cell_type_anno` parameter set, the workflow will annotate cell clusters and perform mRNA velocity analysis.
 
+<br/>
+
 ### Starting from Cellranger outputs
 
 To start the workflow from previously generated Cellranger output files instead of from fastq files, set the `input` parameter in the nextflow.config file to an empty string. Instead, specify the `cellranger_out_dir` and `metadata` parameters. These specify a file path to a directory containing cellranger outputs, and a tab delimited file with cell barcodes and metadata, respectively. Please see below under "Parameters" for more details.
@@ -57,7 +59,7 @@ As with starting from fastq files, cell type annotation and mRNA velocity analys
 
 Additionally, the `scRNA_velocity_file` parameter must be set for mRNA velocity analysis to be performed. This specifies the path to a file containing file paths of directories with Cellranger output BAM files, see below under "Parameters" for more details.
 
-<br/><br/>
+<br/>
 
 ## Parameters
 
@@ -74,6 +76,7 @@ All parameters can be set on the command line with `--parameter_name` or in the 
             - "velocyto" for velocyto outputs (".loom" files containing counts of spliced and unspliced reads)\
             - "scvelo" for Scvelo mRNA velocity outputs
 
+<br/>
 
 ### Parameters specific to starting from fastq files:
 
@@ -87,6 +90,7 @@ Set `cellranger_out_dir` and `metadata` instead of `input` to start the pipeline
 Make sure in this case that `input` is empty to prevent genome alignment from being run.\
 Optionally set the `scRNA_velocity_file` parameter to run mRNA velocity analysis when starting from Cellranger outputs.
 
+<br/>
 
 ### Parameters specific to starting from Cellranger output files:
 
@@ -106,6 +110,7 @@ Optionally set the `scRNA_velocity_file` parameter to run mRNA velocity analysis
 
 Note: If the `input` parameter is not set, mRNA velocity analysis is only run if the `scRNA_velocity_file` parameter is set.
 
+<br/>
 
 ### Parameters related to scRNA-seq clustering:
 
@@ -118,6 +123,7 @@ Note: If the `input` parameter is not set, mRNA velocity analysis is only run if
 - `harmony_var`       Name of the metadata column to use for Harmony data integration, defaults to ""
 - `leiden_res`        Resolution of cell clustering, defaults to 0.4
 
+<br/>
 
 ### Parameters related to scRNA-seq annotation and mRNA velocity analysis:
 
@@ -128,7 +134,9 @@ Note: If the `input` parameter is not set, mRNA velocity analysis is only run if
 
 Note: scRNA-seq annotation and mRNA velocity analysis are only run if the `cell_type_anno` parameter is set.
 
-<br/><br/>
+<br/>
+
+
 
 ## Profiles
 
@@ -159,7 +167,7 @@ Pre-defined parameters:\
 Pre-defined Docker options:\
 `docker.enabled = false`
 
-<br/><br/>
+<br/>
 
 #### HPC_docker
 
@@ -183,7 +191,7 @@ Pre-defined Docker options:\
 `docker.enabled = true`\
 `docker.runOptions = '-u $(id -u):$(id -g)'`
 
-<br/><br/>
+<br/>
 
 #### standard
 
@@ -200,7 +208,7 @@ Pre-defined Docker options:\
 `docker.enabled = true`\
 `docker.runOptions = '-u $(id -u):$(id -g)'`
 
-
+<br/>
 
 ### Pre-defined genome profiles are:
 
@@ -212,7 +220,7 @@ Pre-defined Docker options:\
 `genome_ucsc     = "hg38"`          -> Genome name used in UCSC genome browser\
 `ensembl_version = "110"`           -> Ensembl genome browser release to use for file downloads
 
-<br/><br/>
+<br/>
 
 #### mouse
 
@@ -222,7 +230,7 @@ Pre-defined Docker options:\
 `genome_ucsc     = "mm39"`\
 `ensembl_version = "110"`
 
-<br/><br/>
+<br/>
 
 #### zebrafish
 
