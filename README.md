@@ -36,9 +36,9 @@ The `--input` flag gives the file path to a ".txt" or ".csv" input sample sheet,
 When setting the `-resume` flag, the pipeline will resume from a previous run.
 
 
-### Usage scenarios
+## Usage scenarios
 
-- Starting from fastq files
+### Starting from fastq files
 
 If the `input` parameter is set in the nextflow.config file or on the command line, the workflow will start from fastq files. See below under "Parameters" for more information about `input` specifications.
 
@@ -48,7 +48,7 @@ If no cell type annotation file is provided via the `cell_type_anno` parameter, 
 
 With the `cell_type_anno` parameter set, the workflow will annotate cell clusters and perform mRNA velocity analysis.
 
-- Starting from Cellranger outputs
+### Starting from Cellranger outputs
 
 To start the workflow from previously generated Cellranger output files instead of from fastq files, set the `input` parameter in the nextflow.config file to an empty string. Instead, specify the `cellranger_out_dir` and `metadata` parameters. These specify a file path to a directory containing cellranger outputs, and a tab delimited file with cell barcodes and metadata, respectively. Please see below under "Parameters" for more details.
 
@@ -57,7 +57,7 @@ As with starting from fastq files, cell type annotation and mRNA velocity analys
 Additionally, the `scRNA_velocity_file` parameter must be set for mRNA velocity analysis to be performed. This specifies the path to a file containing file paths of directories with Cellranger output BAM files, see below under "Parameters" for more details.
 
 
-### Parameters
+## Parameters
 
 All parameters can be set on the command line with `--parameter_name` or in the `params` scope of the nextflow.config file located in the main pipeline directory.
 
@@ -73,7 +73,7 @@ All parameters can be set on the command line with `--parameter_name` or in the 
             - "scvelo" for Scvelo mRNA velocity outputs
 
 
-Parameters specific to starting from fastq files:
+### Parameters specific to starting from fastq files:
 
 - `input`     The file path to an input ".txt" (tab delimited) or ".csv" file containing sample information.\
             - The first column of the sample sheet must be named "sample_id" and contain sample-specific identifiers that also are prefixes in the corresponding fastq file names.\
@@ -86,7 +86,7 @@ Make sure in this case that `input` is empty to prevent genome alignment from be
 Optionally set the `scRNA_velocity_file` parameter to run mRNA velocity analysis when starting from Cellranger outputs.
 
 
-Parameters specific to starting from Cellranger output files:
+### Parameters specific to starting from Cellranger output files:
 
 - `cellranger_out_dir`  The file path to a directory containing cellranger output "barcodes.tsv.gz", "features.tsv.gz" and "matrix.mtx.gz" files,\
                         typically a "/outs/count/filtered_feature_bc_matrix" directory.
@@ -105,7 +105,7 @@ Parameters specific to starting from Cellranger output files:
 Note: If the `input` parameter is not set, mRNA velocity analysis is only run if the `scRNA_velocity_file` parameter is set.
 
 
-Parameters related to scRNA-seq clustering:
+### Parameters related to scRNA-seq clustering:
 
 - `clustering_mode`   Clustering analysis mode, can be one of: "scanpy" or "seurat"
 - `min_genes`         Minimum number of genes expressed for a cell to be kept in the dataset, defaults to 200
@@ -117,7 +117,7 @@ Parameters related to scRNA-seq clustering:
 - `leiden_res`        Resolution of cell clustering, defaults to 0.4
 
 
-Parameters related to scRNA-seq annotation and mRNA velocity analysis:
+### Parameters related to scRNA-seq annotation and mRNA velocity analysis:
 
 - `cell_type_anno`    The file path to a ".csv" file containing\
                     - a column named "cluster" of cell cluster numbers\
@@ -127,15 +127,15 @@ Parameters related to scRNA-seq annotation and mRNA velocity analysis:
 Note: scRNA-seq annotation and mRNA velocity analysis are only run if the `cell_type_anno` parameter is set.
 
 
-### Profiles
+## Profiles
 
 Multiple parameters can be bundled into profiles. These are defined in the `profiles` scope in the nextflow.config file and can be invoked on the command line via the `-profile` flag.\
 Additional executor or genome profiles can be added in the nextflow.config file.
 
 
-Pre-defined executor profiles are:
+### Pre-defined executor profiles are:
 
-- HPC_no_docker
+#### HPC_no_docker
 
 Use for pipeline execution on a high performance cluster without using Docker.
 
@@ -157,7 +157,7 @@ Pre-defined Docker options:\
 `docker.enabled = false`
 
 
-- HPC_docker
+#### HPC_docker
 
 Use for pipeline execution on a high performance cluster that allows the use of Docker.
 
@@ -180,7 +180,7 @@ Pre-defined Docker options:\
 `docker.runOptions = '-u $(id -u):$(id -g)'`
 
 
-- standard
+#### standard
 
 Use for local pipeline execution.
 
@@ -197,9 +197,9 @@ Pre-defined Docker options:\
 
 
 
-Pre-defined genome profiles are:
+### Pre-defined genome profiles are:
 
-- human
+#### human
 
 Pre-defined parameters:\
 `species         = "human"`\
@@ -209,7 +209,7 @@ Pre-defined parameters:\
 `ensembl_version = "110"`           -> Ensembl genome browser release to use for file downloads
 
 
-- mouse
+#### mouse
 
 Pre-defined parameters:\
 `species         = "mouse"`\
@@ -219,7 +219,7 @@ Pre-defined parameters:\
 `ensembl_version = "110"`
 
 
-- zebrafish
+#### zebrafish
 
 Pre-defined parameters:\
 `species         = "zebrafish"`\
