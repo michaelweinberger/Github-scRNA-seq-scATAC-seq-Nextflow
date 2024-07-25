@@ -52,6 +52,7 @@ done
 
 
 
+# Capitalise first letter
 species_latin_2=${species_latin^}
 
 
@@ -79,18 +80,6 @@ else
 	rsync -avzP rsync://ftp.ebi.ac.uk/ensemblorg/pub/release-${ensembl_version}/gtf/${species_latin}/${species_latin_2}.${genome}.${ensembl_version}.gtf.gz .
 	mv ./${species_latin_2}.${genome}.${ensembl_version}.gtf.gz ./${genome}.${ensembl_version}.gtf.gz
 	gunzip ./${genome}.${ensembl_version}.gtf.gz
-
-	# prepare cellranger reference data
-	cellranger mkgtf \
-    		./${genome}.${ensembl_version}.gtf \
-    		./${genome}.${ensembl_version}.filtered.gtf \
-    		--attribute=gene_biotype:protein_coding
-
-	cellranger mkref \
-    		--genome=refdata-cellranger-${genome} \
-    		--fasta=./${genome}.fa \
-    		--genes=./${genome}.${ensembl_version}.filtered.gtf \
-		--output-dir=\$PWD
 fi
 
 

@@ -93,6 +93,15 @@ def anndata_from_seurat(count_matrix, metadata, genes, pca, out_dir, project_nam
     adata.obsm['X_pca'] = pca.to_numpy()
     adata.obsm['X_umap'] = np.vstack((adata.obs['UMAP_1'].to_numpy(), adata.obs['UMAP_2'].to_numpy())).T
     
+    # adjust plotting order
+    if 'order' in adata.obs.columns:
+        tmp = adata.obs.sort_values(by = ['order'])
+        adata.obs['cell_type'] = pd.Categorical(
+            values=adata.obs.cell_type, 
+            categories=tmp['cell_type'].unique(), 
+            ordered=True
+            )
+        
     # plot a UMAP colored by cell type to test:
     #sc.pl.umap(adata, color=['cell_type'], frameon=False, save=project_name + '_celltypes.pdf',
     #           title=project_name)

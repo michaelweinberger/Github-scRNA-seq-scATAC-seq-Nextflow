@@ -75,7 +75,7 @@ def scanpy_create_10X(cellranger_dir, out_dir, out_name, metadata=None, min_gene
     out_dir: Directory to write Anndata object and plots to
     out_name: Name of dataset, will be used in plot and output file names
     metadata: name of optional file with cell metadata, should be tab-separated and
-                contain a column with cell barcodes named 'barcode'
+              contain a column with cell barcodes named 'barcode'
     
     """
     
@@ -170,7 +170,7 @@ def doublet_detection(adata, out_dir, out_name, var=None):
     
     clf = doubletdetection.BoostClassifier(
         n_iters=10,
-        clustering_algorithm="louvain",
+        clustering_algorithm="leiden",
         standard_scaling=True,
         pseudocount=0.1,
         n_jobs=-1,
@@ -246,13 +246,14 @@ def scanpy_analysis(adata, out_dir, out_name, leiden_res=0.4, min_genes=200, min
     
     """
     
+    random.seed(0)
+    
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
     
     # set plot file suffix
     sc.settings.plot_suffix = f"_scanpy_{out_name}"
     sc.settings.figdir = out_dir
-    #random.seed(0)
     
     # restore raw counts
     if not adata.raw is None:
@@ -268,8 +269,13 @@ def scanpy_analysis(adata, out_dir, out_name, leiden_res=0.4, min_genes=200, min
     adata.var['mt'] = adata.var_names.str.startswith(('MT-', 'mt-'))
     sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
     
-    sc.pl.violin(adata, ['n_genes_by_counts', 'total_counts', 'pct_counts_mt'],
-                 jitter=0.4, multi_panel=True, save='_qc_violin.png')
+    sc.pl.violin(
+        adata, 
+        ['n_genes_by_counts', 'total_counts', 'pct_counts_mt'],
+        jitter=0.4, 
+        multi_panel=True, 
+        save='_qc_violin.png'
+        )
     sc.pl.scatter(adata, x='total_counts', y='pct_counts_mt', save='_qc_scatter_1.png')
     sc.pl.scatter(adata, x='total_counts', y='n_genes_by_counts', save='_qc_scatter_2.png')
     
@@ -281,7 +287,13 @@ def scanpy_analysis(adata, out_dir, out_name, leiden_res=0.4, min_genes=200, min
     sc.pp.log1p(adata)
     
     # identify highly variable genes
-    sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5, batch_key=batch_var)
+    sc.pp.highly_variable_genes(
+        adata, 
+        min_mean=0.0125, 
+        max_mean=3, 
+        min_disp=0.5, 
+        batch_key=batch_var
+        )
     sc.pl.highly_variable_genes(adata, save='.png')
     
     adata.raw = adata
@@ -296,34 +308,84 @@ def scanpy_analysis(adata, out_dir, out_name, leiden_res=0.4, min_genes=200, min
     sc.pp.scale(adata, max_value=10)
     
     # compute PCs
-    sc.tl.pca(adata, svd_solver='arpack')
-    sc.pl.pca_variance_ratio(adata, log=True, save='.pdf')
+    sc.tl.pca(
+        adata, 
+        svd_solver='arpack', 
+        random_state=0
+        )
+    sc.pl.pca_variance_ratio(
+        adata, 
+        log=True, 
+        save='.pdf'
+        )
     
     # optionally integrate data batches with harmonypy
     if harmony_var==None:
         # compute neighbourhood graph
-        sc.pp.neighbors(adata, n_neighbors=neighbors, n_pcs=pcs)
+        sc.pp.neighbors(
+            adata, 
+            n_neighbors=neighbors, 
+            n_pcs=pcs,
+            random_state=0
+            )
         
     else:
         sce.pp.harmony_integrate(adata, harmony_var)
         
         # compute neighbourhood graph
-        sc.pp.neighbors(adata, n_neighbors=neighbors, n_pcs=pcs, use_rep='X_pca_harmony')
+        sc.pp.neighbors(
+            adata, 
+            n_neighbors=neighbors, 
+            n_pcs=pcs, 
+            use_rep='X_pca_harmony',
+            random_state=0
+            )
     
     # determine clusters
-    sc.tl.leiden(adata, resolution=leiden_res)
+    sc.tl.leiden(
+        adata, 
+        resolution=leiden_res,
+        random_state=0
+        )
     
-    # compute embeddings    
+    # compute embeddings
+        
     sc.tl.paga(adata)
-    sc.pl.paga(adata, plot=True, edge_width_scale=2, node_size_scale=2, save='.pdf')
+    sc.pl.paga(
+        adata, 
+        plot=True, 
+        edge_width_scale=2, 
+        node_size_scale=2, 
+        save='.pdf'
+        )
     
-    sc.tl.umap(adata, init_pos='paga')
-    sc.pl.umap(adata, color=['leiden'], 
-               legend_loc='right margin', title='', frameon=False, ncols=1, save=f"_leiden_{leiden_res}.png")
+    sc.tl.umap(
+        adata, 
+        init_pos='paga', 
+        random_state=0
+        )
+    sc.pl.umap(
+        adata, 
+        color=['leiden'], 
+        legend_loc='right margin', 
+        title='', 
+        frameon=False, 
+        ncols=1, 
+        save=f"_leiden_{leiden_res}.png"
+        )
     
     # identify marker genes
-    sc.tl.rank_genes_groups(adata, 'leiden', method='wilcoxon')
-    sc.pl.rank_genes_groups(adata, n_genes=25, sharey=False, save='.pdf')
+    sc.tl.rank_genes_groups(
+        adata, 
+        'leiden', 
+        method='wilcoxon'
+        )
+    sc.pl.rank_genes_groups(
+        adata, 
+        n_genes=25, 
+        sharey=False, 
+        save='.pdf'
+        )
     result = adata.uns['rank_genes_groups']
     groups = result['names'].dtype.names
     markers = pd.DataFrame({group + '_' + key[:1]: result[key][group] 

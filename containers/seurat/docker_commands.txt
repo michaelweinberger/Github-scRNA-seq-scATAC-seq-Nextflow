@@ -1,9 +1,9 @@
-docker build -t michaelweinberger/r-base-4.4.2-seurat:v1 .
+docker build -t michaelweinberger/seurat-doubletfinder-harmony:v1 .
 
 cat ./docker_password.txt | docker login --username michaelweinberger --password-stdin
 
-docker tag michaelweinberger/r-base-4.4.2-seurat:v1 michaelweinberger/r-base-4.4.2-seurat:v1
+docker tag michaelweinberger/seurat-doubletfinder-harmony:v1 michaelweinberger/seurat-doubletfinder-harmony:v1
 
-docker push michaelweinberger/r-base-4.4.2-seurat:v1
+docker push michaelweinberger/seurat-doubletfinder-harmony:v1
 
 docker logout

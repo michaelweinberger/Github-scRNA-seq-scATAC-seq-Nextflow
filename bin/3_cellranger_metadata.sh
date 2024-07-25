@@ -46,12 +46,12 @@ for j in $(sed '1d' $cellranger_aggr_input_csv | awk -F, '{print $1}')
 do
 	# extract path to cellranger count output directory
         h5_path=$(grep $j $cellranger_aggr_input_csv | awk -F, '{print $2}')
-        pattern="/outs/molecule_info.h5"
-        cellranger_count_outdir=${h5_path/${pattern}/}
+        pattern="molecule_info.h5"
+        barcodes_file=${h5_path//"$pattern"/"filtered_feature_bc_matrix/barcodes.tsv"}
 
         # get cell barcodes from cellranger count output
-	gunzip ${cellranger_count_outdir}/outs/filtered_feature_bc_matrix/barcodes.tsv.gz
-	cat ${cellranger_count_outdir}/outs/filtered_feature_bc_matrix/barcodes.tsv | awk -F\\t '{print $(NF-0)}' > cellranger_aggr_cell_metadata_${j}.tsv
+	gunzip ${barcodes_file}.gz
+	cat ${barcodes_file} | awk -F\\t '{print $(NF-0)}' > cellranger_aggr_cell_metadata_${j}.tsv
 
 	# rename barcodes by replacing last letter "1" with the sample count (similar to what cellranger aggr does)
 	sed "s/\(.\)$/${sample_count}/" cellranger_aggr_cell_metadata_${j}.tsv > cellranger_aggr_cell_metadata_${j}_2.tsv
@@ -68,7 +68,7 @@ do
 	# append everything to combined output file
 	cat cellranger_aggr_cell_metadata_${j}_2.tsv >> cellranger_aggr_cell_metadata.tsv
 
-	gzip ${cellranger_count_outdir}/outs/filtered_feature_bc_matrix/barcodes.tsv
+	gzip ${barcodes_file}
 
 	sample_count=`expr ${sample_count} + 1`
 done

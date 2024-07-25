@@ -422,6 +422,14 @@ min_cells <- as.numeric(min_cells)
 n_pcs <- as.numeric(n_pcs)
 leiden_res <- as.numeric(leiden_res)
 
+# ensure missing harmony_var is received as NULL in function cluster_seurat
+meta_data <- read.table(metadata_file, header=TRUE)
+
+if (!harmony_var %in% colnames(meta_data)) {
+  harmony_var = NULL
+}
+print(harmony_var)
+
 
 
 # create output directory if it does not exist
@@ -464,8 +472,12 @@ if (!file.exists(paste(out_dir, "/", project_name, "_scRNAseq_analysed_no_double
   ## cluster cells
   seurat_obj <- cluster_seurat(seurat_obj=seurat_obj, out_dir=out_dir, project_name=project_name, 
                                n_dims=n_pcs, resolution=leiden_res, harmony_var=harmony_var)
+
+  # For some reason, seurat cluster levels are 0-based, but values are 1-based
+  # -> adjust levels to be 1-based
+  seurat_obj$seurat_clusters <- as.factor(as.numeric(seurat_obj$seurat_clusters)) 
   
-  
+
   ## plot UMAPs with metadata overlay
   idents_list = colnames(seurat_obj[[]])
   idents_list = idents_list[idents_list != "barcode"]
@@ -477,7 +489,7 @@ if (!file.exists(paste(out_dir, "/", project_name, "_scRNAseq_analysed_no_double
   ## Identify cluster markers
   seurat_obj <- markers_seurat(seurat_obj=seurat_obj, out_dir=out_dir, project_name=project_name, 
                                idents="seurat_clusters", n_markers=200)
-  
+
 
   ## export metadata as csv
   meta_data_export <- seurat_obj[[]]

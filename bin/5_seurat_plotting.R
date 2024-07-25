@@ -33,7 +33,7 @@ if (!require("ggplot2")) install.packages("ggplot2")
 if (!require("dplyr")) install.packages("dplyr")
 #if (!require("tidyr")) install.packages("tidyr")
 #if (!require("DESeq2")) install.packages("DESeq2")
-if (!require("xlsx")) install.packages("xlsx")
+#if (!require("xlsx")) install.packages("xlsx")
 #if (!require("Matrix")) install.packages("Matrix")
 
 
@@ -65,18 +65,21 @@ annotate_seurat <- function(seurat_obj, out_dir, project_name,
                             mode=c("sctype","custom"), annotation_df=NULL, 
                             sctype_tissue="All", annotation_name) {
   
-  Idents(seurat_obj) <- seurat_obj[["seurat_clusters"]]
+  Idents(seurat_obj) <- seurat_obj$seurat_clusters
   
+  # Add annotation
   if (mode == "custom") {
     seurat_meta <- as.data.frame(seurat_obj[[]])
     seurat_meta$seurat_clusters <- as.numeric(seurat_meta$seurat_clusters)
-    tmp <- as.data.frame(seurat_meta %>% left_join(annotation_df, by = join_by(seurat_clusters == cluster)))
-    if (identical(seurat_obj@meta.data[["cell_id"]], tmp[["cell_id"]])) {
+    tmp <- as.data.frame(seurat_meta %>% 
+             left_join(annotation_df, by = join_by(seurat_clusters == cluster)))
+    if (identical(names(seurat_obj$cell_id), tmp$cell_id)) {
       print("Annotation order matches Seurat metadata order")
     }
     rownames(tmp) <- tmp$cell_id
     seurat_obj@meta.data <- tmp
-    Idents(seurat_obj) <- seurat_obj[["cell_type"]]
+    seurat_obj$seurat_clusters <- as.factor(seurat_obj$seurat_clusters)
+    Idents(seurat_obj) <- seurat_obj$cell_type
   
   } else if (mode == "sctype") {
     source("https://raw.githubusercontent.com/IanevskiAleksandr/sc-type/master/R/auto_detect_tissue_type.R")
@@ -231,45 +234,46 @@ umap_seurat <- function(seurat_obj, out_dir, project_name, idents_list, labels=T
   
   for (ident in idents_list) {
     
-    if (labels == TRUE) {
+    if (labels == TRUE) {    
       if (ident == "seurat_clusters") {
         resolution <- resolution * 100
-        filename <- paste(out_dir, "/", project_name, "_umap_res_0_", resolution, 
-                          ".", file_type, sep="")
-      } else {
-        filename <- paste(out_dir, "/", project_name, "_umap_", ident, ".", 
-                          file_type, sep="")
-      }
-
-      if (is.numeric(seurat_obj[[ident]][1,]) | is.integer(seurat_obj[[ident]][1,])) {
+        gg <- DimPlot(seurat_obj, reduction = "umap", group.by="seurat_clusters", 
+                      label = TRUE, pt.size = 0.4) + NoLegend()
+        ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_res_0_", resolution, ".", 
+                                  file_type, sep=""), device=file_type, dpi=300)
+      } else { 
+        if (is.character(seurat_obj[[ident]][,]) || is.factor(seurat_obj[[ident]][,])) {
+          gg <- DimPlot(seurat_obj, reduction = "umap", group.by=ident,
+                        label = TRUE, pt.size = 0.4) + NoLegend()
+          ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_", ident, ".", 
+                                    file_type, sep=""), device=file_type, dpi=300)
+        } else {
           gg <- FeaturePlot(seurat_obj, reduction = "umap", features=ident,
                             label = FALSE, pt.size = 0.4)
-      } else {
-          gg <- DimPlot(seurat_obj, reduction = "umap", group.by=ident,
-                        label = TRUE, pt.size = 0.4) + NoLegend() 
+          ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_", ident, ".", 
+                                    file_type, sep=""), device=file_type, dpi=300)
+        }
       }
-
-      ggsave(gg, filename=filename, device=file_type, dpi=300)
-
     } else if (labels == FALSE) {
       if (ident == "seurat_clusters") {
         resolution <- resolution * 100
-        filename <- paste(out_dir, "/", project_name, "_umap_res_0_", resolution, 
-                          "_no_labels.", file_type, sep="")
-      } else {
-        filename <- paste(out_dir, "/", project_name, "_umap_", ident, "_no_labels.", 
-                          file_type, sep="")
-      }
-
-      if (is.numeric(seurat_obj[[ident]][1,]) | is.integer(seurat_obj[[ident]][1,])) {
-        gg <- FeaturePlot(seurat_obj, reduction = "umap", features=ident,
-                          label = FALSE, pt.size = 0.4)
-      } else {
+        gg <- DimPlot(seurat_obj, reduction = "umap", group.by="seurat_clusters",
+                      label = FALSE, pt.size = 0.4)
+        ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_res_0_", resolution, 
+                                  "_no_labels.", file_type, sep=""), device=file_type, dpi=300, width=11)
+      } else { 
+        if (is.character(seurat_obj[[ident]][,]) || is.factor(seurat_obj[[ident]][,]))  {
           gg <- DimPlot(seurat_obj, reduction = "umap", group.by=ident,
-                        label = FALSE, pt.size = 0.4)     
+                        label = FALSE, pt.size = 0.4)
+          ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_", ident, "_no_labels.", 
+                                    file_type, sep=""), device=file_type, dpi=300, width=11)
+        } else {
+          gg <- FeaturePlot(seurat_obj, reduction = "umap", features=ident,
+                            label = FALSE, pt.size = 0.4)
+          ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_", ident, "_no_labels.", 
+                                    file_type, sep=""), device=file_type, dpi=300, width=11)
+        }
       }
-
-      ggsave(gg, filename=filename, device=file_type, dpi=300, width=11)
     }
   }
 
@@ -295,7 +299,6 @@ if (!dir.exists(out_dir)) {
 
 # read in Seurat object
 seurat_obj <- readRDS(in_file)
-#print(str(seurat_obj[[]]))
 
 
 # read in cell type annotation

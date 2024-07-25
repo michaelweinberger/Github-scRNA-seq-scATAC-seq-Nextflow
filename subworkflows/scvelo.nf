@@ -29,7 +29,7 @@ process VELOCYTO_PR {
     
     output:
     path ( "*.loom"       ), emit: loom_file // emitted for loom merge
-    path ( "versions.yml" ), emit: versions
+    path ( "versions.txt" ), emit: versions
 
     script:
     """
@@ -47,9 +47,9 @@ process VELOCYTO_PR {
     loom_prefix="\$(echo "\${tmp_var##*/}")"
     mv "${cellranger_count_outdir}/velocyto/\${loom_prefix}.loom" "./${sample_id}.loom"
 
-    echo "${task.process}:" > versions.yml
-    samtools --version | head -n 1 | sed 's/ /,/' >> versions.txt
-    python --version | sed 's/^/python,/' >> versions.txt
+    echo "${task.process}:" > versions.txt
+        samtools --version | head -n 1 | sed 's/ /,/' >> versions.txt
+        python --version >> versions.txt
     """
 }
 
@@ -59,7 +59,7 @@ process VELOCYTO_PR {
  * merge loom files of individual samples
  */
 process MERGE_LOOM_PR {
-    debug true
+    debug false
     publishDir "${outdir}/velocyto", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
 
     container { ( "$docker_enabled" ) ? "michaelweinberger/python-3.11.9-scvelo:v1" : "" }
@@ -73,7 +73,7 @@ process MERGE_LOOM_PR {
     
     output:
     path ( "merged.loom"  ), emit: merged_loom // emitted for scvelo
-    path ( "versions.yml" ), emit: versions
+    path ( "versions.txt" ), emit: versions
 
     script:
     """
@@ -87,8 +87,10 @@ process MERGE_LOOM_PR {
                              -m "$metadata" \
                              -o "\$PWD"
 
-    echo "${task.process}:" > versions.yml
-    python --version | sed 's/^/python,/' >> versions.txt
+    echo "${task.process}:" > versions.txt
+        python --version >> versions.txt
+        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
     """
 }
 
@@ -98,10 +100,10 @@ process MERGE_LOOM_PR {
  * export count_matrix, cell and gene metadata, and PCA results from Seurat object
  */
 process EXPORT_SEURAT_DATA_PR {
-    debug true
+    debug false
     publishDir "${outdir}/seurat", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
 
-    container { ( "$docker_enabled" ) ? "michaelweinberger/r-base-4.4.2-seurat:v1" : "" }
+    container { ( "$docker_enabled" ) ? "michaelweinberger/seurat-doubletfinder-harmony:v1" : "" }
 
     input:
     path ( seurat_object )
@@ -115,7 +117,7 @@ process EXPORT_SEURAT_DATA_PR {
     path ( "velocity_metadata_${out_name}.csv" ), emit: cell_meta_data
     path ( "velocity_genes_${out_name}.csv"    ), emit: gene_meta_data
     path ( "velocity_pca_${out_name}.csv"      ), emit: pca_data
-    path ( "versions.yml"                      ), emit: versions
+    path ( "versions.txt"                      ), emit: versions
 
     script:
     """
@@ -129,8 +131,11 @@ process EXPORT_SEURAT_DATA_PR {
                                               out_dir="\$PWD" \
                                               project_name="$out_name"
 
-    echo "${task.process}:" > versions.yml
-    R --version | sed 's/^/r-base,/' >> versions.txt
+    echo "${task.process}:" > versions.txt
+        R --version | head -n 1 >> versions.txt
+        R -e "library(Matrix); print(paste('Matrix', packageVersion('Matrix')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R -e "library(patchwork); print(paste('patchwork', packageVersion('patchwork')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R -e "library(Seurat); print(paste('Seurat', packageVersion('Seurat')))" | grep '[1]' | tail -n 1 >> versions.txt
     """
 }
 
@@ -140,7 +145,7 @@ process EXPORT_SEURAT_DATA_PR {
  * construct Anndata object from scRNA-seq count_matrix, cell and gene metadata, and PCA results
  */
 process CONSTRUCT_ANNDATA_PR {
-    debug true
+    debug false
     publishDir "${outdir}/seurat", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
 
     container { ( "$docker_enabled" ) ? "michaelweinberger/python-3.11.9-scvelo:v1" : "" }
@@ -157,7 +162,7 @@ process CONSTRUCT_ANNDATA_PR {
     
     output:
     path ( "${out_name}_from_matrix_metadata_pca.h5ad" ), emit: anndata_object // emitted for scvelo
-    path ( "versions.yml"                              ), emit: versions
+    path ( "versions.txt"                              ), emit: versions
 
     script:
     """
@@ -174,8 +179,14 @@ process CONSTRUCT_ANNDATA_PR {
                                  -o "\$PWD" \
                                  -n "$out_name"
 
-    echo "${task.process}:" > versions.yml
-    python --version | sed 's/^/python,/' >> versions.txt
+    echo "${task.process}:" > versions.txt
+        python --version >> versions.txt
+        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" >> versions.txt
+        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" >> versions.txt
+        python -c "import anndata; print(f'anndata,{anndata.__version__}')" >> versions.txt
+        python -c "import scipy; print(f'scipy,{scipy.__version__}')" >> versions.txt
+        python -c "import numpy; print(f'numpy,{numpy.__version__}')" >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
     """
 }
 
@@ -185,7 +196,7 @@ process CONSTRUCT_ANNDATA_PR {
  * perform scvelo analysis
  */
 process SCVELO_PR {
-    debug true
+    debug false
     publishDir "${outdir}/scvelo", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
 
     container { ( "$docker_enabled" ) ? "michaelweinberger/python-3.11.9-scvelo:v1" : "" }
@@ -203,7 +214,7 @@ process SCVELO_PR {
     path ( "*${out_name}*.png"                ), emit: plots_png
     path ( "${out_name}_dynamical_genes.csv"  ), emit: dynamical_genes_csv
     path ( "${out_name}_scvelo.h5ad"          ), emit: scvelo_object
-    path ( "versions.yml"                     ), emit: versions
+    path ( "versions.txt"                     ), emit: versions
 
     script:
     """
@@ -218,8 +229,12 @@ process SCVELO_PR {
                 -o "\$PWD" \
                 -n "$out_name"
 
-    echo "${task.process}:" > versions.yml
-    python --version | sed 's/^/python,/' >> versions.txt
+    echo "${task.process}:" > versions.txt
+        python --version >> versions.txt
+        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" >> versions.txt
+        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" >> versions.txt
+        python -c "import numpy; print(f'numpy,{numpy.__version__}')" >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
     """
 }
 
@@ -257,7 +272,6 @@ workflow SCVELO_WF {
 
         // Pass generated loom files simultaneously into merging process
         ch_loom_files = VELOCYTO_PR.out.loom_file.collect()
-        ch_loom_files.view()
 
         MERGE_LOOM_PR (
             ch_loom_files,
@@ -269,7 +283,7 @@ workflow SCVELO_WF {
         ch_versions = ch_versions.mix(MERGE_LOOM_PR.out.versions)
 
         // Construct or declare input anndata object
-        if ( params.scRNA_analysis == "seurat" ) {
+        if ( params.clustering_mode == "seurat" ) {
             EXPORT_SEURAT_DATA_PR (
                 scrnaseq_object,
                 out_name,

@@ -33,7 +33,7 @@ process ANNOTATE_SCANPY_PR {
     path ( "${out_name}_obs.csv"                                  ), emit: cell_metadata_csv
     path ( "${out_name}_scRNAseq_no_doublets_annotated.h5ad"      ), emit: scrnaseq_object
     path ( "${out_name}_scRNAseq_no_doublets_annotated_scVI.h5ad" ), emit: scrnaseq_scvi_object
-    path ( "versions.yml"                                         ), emit: versions
+    path ( "versions.txt"                                         ), emit: versions
 
     script:
     """
@@ -49,8 +49,14 @@ process ANNOTATE_SCANPY_PR {
                          -n "$out_name" \ 
                          -r "$leiden_res"
 
-    echo "${task.process}:" > versions.yml
-    python --version | sed 's/^/python,/' >> versions.txt
+    echo "${task.process}:" > versions.txt
+        python --version >> versions.txt
+        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" >> versions.txt
+        python -c "import anndata; print(f'anndata,{anndata.__version__}')" >> versions.txt
+        python -c "import numpy; print(f'numpy,{numpy.__version__}')" >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
+        python -c "import matplotlib; print(f'matplotlib,{matplotlib.__version__}')" >> versions.txt
+        python -c "import seaborn; print(f'seaborn,{seaborn.__version__}')" >> versions.txt
     """
 }
 

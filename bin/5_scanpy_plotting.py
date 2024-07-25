@@ -146,6 +146,7 @@ if not os.path.isfile(f"{out_dir}/{out_name}_scRNAseq_no_doublets_annotated.h5ad
         annotation_df = annotation_df.sort_values(by = ['order'])
         adata.obs['cell_type'] = pd.Categorical(values=adata.obs.cell_type, categories=annotation_df['cell_type'].unique(), 
                                             ordered=True)
+        
     # drop unnamed columns from metadata
     adata.obs = adata.obs.loc[:, ~adata.obs.columns.str.contains('^Unnamed')]
 

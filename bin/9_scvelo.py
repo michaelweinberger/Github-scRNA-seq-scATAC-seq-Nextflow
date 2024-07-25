@@ -158,7 +158,7 @@ def scvelo_analysis(adata, ldata, out_dir, project_name, color_palette=None):
     # identify genes driving cell state transitions
     scv.tl.rank_dynamical_genes(adata1, groupby='cell_type')
     scvelo_genes = scv.get_df(adata1, 'rank_dynamical_genes/names')
-    scvelo_genes.to_csv(project_name + '_dynamical_genes.csv', sep="\t", index=False)
+    scvelo_genes.to_csv(project_name + '_dynamical_genes.csv', sep=",", index=False)
     
     # calculate pseudotime
     print('Calculating pseudotime')

@@ -16,7 +16,7 @@ process CLUSTER_SEURAT_PR {
     debug true
     publishDir "${outdir}/seurat", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
 
-    container { ( "$docker_enabled" ) ? "michaelweinberger/r-base-4.4.2-seurat:v1" : "" }
+    container { ( "$docker_enabled" ) ? "michaelweinberger/seurat-doubletfinder-harmony:v1" : "" }
 
     input:
     path (cellranger_out_dir)
@@ -40,7 +40,7 @@ process CLUSTER_SEURAT_PR {
     path ( "${out_name}_markers.xlsx"                      ), emit: markers_csv
     path ( "${out_name}_metadata.csv"                      ), emit: cell_metadata_csv
     path ( "${out_name}_scRNAseq_analysed_no_doublets.rds" ), emit: scrnaseq_object
-    path ( "versions.yml"                                  ), emit: versions
+    path ( "versions.txt"                                  ), emit: versions
 
     script:
     """
@@ -62,8 +62,15 @@ process CLUSTER_SEURAT_PR {
                       harmony_var="$harmony_var" \
                       leiden_res="$leiden_res"
 
-    echo "${task.process}:" > versions.yml
-    R --version | sed 's/^/r-base,/' >> versions.txt
+    echo "${task.process}:" > versions.txt
+        R --version | head -n 1 >> versions.txt
+        R -e "library(dplyr); print(paste('dplyr', packageVersion('dplyr')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R -e "library(ggplot2); print(paste('ggplot2', packageVersion('ggplot2')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R -e "library(patchwork); print(paste('patchwork', packageVersion('patchwork')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R -e "library(pheatmap); print(paste('pheatmap', packageVersion('pheatmap')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R -e "library(Seurat); print(paste('Seurat', packageVersion('Seurat')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R -e "library(viridis); print(paste('viridis', packageVersion('viridis')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R -e "library(writexl); print(paste('writexl', packageVersion('writexl')))" | grep '[1]' | tail -n 1 >> versions.txt
     """
 }
 

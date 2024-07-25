@@ -15,8 +15,18 @@ nextflow.enable.dsl = 2
 process CELLRANGER_COUNT_PR {
     debug       false
     tag         "$sample_id"
-    publishDir  "${outdir}/cellranger", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
-    publishDir  "${outdir}/cellranger", pattern: "cellranger_count_dir", mode: "copy", saveAs: "${sample_id}_count"
+    publishDir (
+        "${outdir}/cellranger", 
+        pattern: "versions.txt", 
+        mode: "copy", 
+        saveAs: { filename -> "${filename}" }
+    )
+    publishDir (
+        "${outdir}/cellranger", 
+        pattern: "cellranger_count_dir", 
+        mode: "copy", 
+        saveAs: { fn -> "${sample_id}_count" }
+    )
 
     container { ( "$docker_enabled" ) ? "litd/docker-cellranger:v7.2.0" : "" }
 
@@ -28,9 +38,9 @@ process CELLRANGER_COUNT_PR {
     val   ( cellranger_module )
     
     output:
-    tuple val( sample_id ), path( cellranger_dir ), emit: cellranger_count_out // emitted for velocyto
-    path ( "cellranger_count_dir"                ), emit: cellranger_count_dir // emitted for publishing
-    path ( "versions.yml"                        ), emit: versions
+    path ( "cellranger_count_info.tsv" ), emit: cellranger_count_info // emitted for velocyto
+    path ( "cellranger_count_dir"      ), emit: cellranger_count_dir  // emitted for publishing
+    path ( "versions.txt"              ), emit: versions
 
     script:
     """
@@ -40,16 +50,20 @@ process CELLRANGER_COUNT_PR {
 
     [ ! -d "${outdir}/cellranger" ] && mkdir -p "${outdir}/cellranger"
 
-    # get full output directory path
-    cellranger_dir="\$(echo \${PWD}/cellranger_count_dir)"
-
     # run cellranger count
     cellranger count --id="cellranger_count_dir" \
 		     --fastqs="$fastq_dir" \
 		     --transcriptome="$transcriptome_ref" \
 		     --sample="$sample_id"
 
-    cat <<-END_VERSIONS > versions.yml
+    # save sample ID and full output path to file
+    printf "sample_id\tcellranger_dir\n" > cellranger_count_info.tsv
+
+    cellranger_dir="\$(echo \${PWD}/cellranger_count_dir)"
+
+    printf "${sample_id}\t\${cellranger_dir}\n" >> cellranger_count_info.tsv
+
+    cat <<-END_VERSIONS > versions.txt
     "${task.process}":
         cellranger: \$(echo \$( cellranger --version 2>&1) | sed 's/^.*[^0-9]\\([0-9]*\\.[0-9]*\\.[0-9]*\\).*\$/\\1/' )
     END_VERSIONS
@@ -62,38 +76,28 @@ process CELLRANGER_COUNT_PR {
  * generate cellranger aggr input .csv file
  */
 process CELLRANGER_AGGR_INPUT_PR {
-    debug       false
-    tag         "$sample_id"
-    publishDir  "${outdir}/cellranger", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
+    debug false
+    publishDir (
+        "${outdir}/cellranger", 
+        pattern: "", 
+        mode: "copy", 
+        saveAs: { filename -> "${filename}" }
+    )
 
     input:
-    path  ( sample_sheet )
-    tuple val ( sample_id ), path ( cellranger_count_outdir )
+    path  ( sample_sheet )          // sample IDs & metadata
+    path  ( cellranger_count_info ) // sample IDs & full filepaths cellranger count output dirs
     path  ( outdir )
     
     output:
     path  ( "cellranger_aggr_input.csv" ), emit: cellranger_aggr_input // emitted for cellranger aggr
 
-    shell:
-    '''
-    [ ! -d "!{outdir}/cellranger" ] && mkdir -p "!{outdir}/cellranger"
+    script:
+    """
+    [ ! -d "${outdir}/cellranger" ] && mkdir -p "${outdir}/cellranger"
 
-    # create header for aggregator input file
-    sed 1q "!{sample_sheet}" | awk -F\\t -vOFS=, '{$1=$2=""; print $0}' | sed 's/^,//' > cellranger_aggr_input.csv
-    sed -i "s/^/sample_id,molecule_h5/" cellranger_aggr_input.csv
-
-    # adjust sample id
-    sample="$(grep "!{sample_id}" "!{sample_sheet}" | awk -F\\t '{print $1}' | tr , _)"
-
-    # extract additional metadata columns and paste together with comma as separator
-    metadata="$(grep "!{sample_id}" "!{sample_sheet}" | awk -F\\t -vOFS=, '{$1=$2=""; print $0}' | sed 's/^,//')"
-
-    # create molecule_info .h5 file path
-    h5_path="!{cellranger_count_outdir}/outs/molecule_info.h5"
-
-    # append everything to .csv file
-    echo "${sample},${h5_path}${metadata}" >> cellranger_aggr_input.csv
-    '''
+    2_cellranger_aggr_input.sh -s "${sample_sheet}" -i "${cellranger_count_info}"
+    """
 }
 
 
@@ -102,8 +106,13 @@ process CELLRANGER_AGGR_INPUT_PR {
  * generate barcode metadata file
  */
 process CELLRANGER_METADATA_PR {
-    debug       false
-    publishDir  "${outdir}/cellranger", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
+    debug true
+    publishDir (
+        "${outdir}/cellranger", 
+        pattern: "", 
+        mode: "copy", 
+        saveAs: { filename -> "${filename}" }
+    )
 
     input:
     path ( cellranger_aggr_input_csv )
@@ -114,7 +123,7 @@ process CELLRANGER_METADATA_PR {
 
     script:
     """
-    [ ! -d "!{outdir}/cellranger" ] && mkdir -p "!{outdir}/cellranger"
+    [ ! -d "${outdir}/cellranger" ] && mkdir -p "${outdir}/cellranger"
 
     3_cellranger_metadata.sh -i "${cellranger_aggr_input_csv}"
     """
@@ -126,8 +135,13 @@ process CELLRANGER_METADATA_PR {
  * run cellranger aggr
  */
 process CELLRANGER_AGGR_PR {
-    debug       false
-    publishDir  "${outdir}/cellranger", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
+    debug false
+    publishDir (
+        "${outdir}/cellranger", 
+        pattern: "", 
+        mode: "copy", 
+        saveAs: { filename -> "${filename}" }
+    )
 
     container { ( "$docker_enabled" ) ? "litd/docker-cellranger:v7.2.0" : "" }
 
@@ -141,7 +155,7 @@ process CELLRANGER_AGGR_PR {
     output:
     path ( "${out_name}/outs/count/filtered_feature_bc_matrix" ), emit: cellranger_aggr_bc_matrix // emitted for scanpy,seurat
     path ( out_name                                            ), emit: cellranger_aggr_outdir    // emitted for publishing
-    path ( "versions.yml"                                      ), emit: versions
+    path ( "versions.txt"                                      ), emit: versions
 
     script:
     """
@@ -155,7 +169,7 @@ process CELLRANGER_AGGR_PR {
     cellranger aggr --id="$out_name" \
 	--csv="$cellranger_aggr_input_csv"
 
-    cat <<-END_VERSIONS > versions.yml
+    cat <<-END_VERSIONS > versions.txt
     "${task.process}":
         cellranger: \$(echo \$( cellranger --version 2>&1) | sed 's/^.*[^0-9]\\([0-9]*\\.[0-9]*\\.[0-9]*\\).*\$/\\1/' )
     END_VERSIONS
@@ -181,37 +195,48 @@ workflow CELLRANGER_COUNT_AGGR_WF {
         ch_versions = Channel.empty()
 
         // run cellranger count
-        CELLRANGER_COUNT_PR ( 
+        CELLRANGER_COUNT_PR (
             cellranger_index,
             input,
             outdir,
             docker_enabled,
             cellranger_module,
         )
-        ch_versions          = ch_versions.mix(CELLRANGER_COUNT_PR.out.versions)
-        cellranger_count_out = CELLRANGER_COUNT_PR.out.cellranger_count_out.flatten()
+        ch_versions = ch_versions.mix(CELLRANGER_COUNT_PR.out.versions)
+
+        // collect sample IDs and full paths of cellranger count output dirs
+        CELLRANGER_COUNT_PR.out.cellranger_count_info
+        .collectFile (
+            name: "cellranger_count_info.tsv", 
+            storeDir: "${outdir}/cellranger", 
+            keepHeader: true
+        )
+        .set { cellranger_count_info }
+
+        // generate tuple of sample IDs and full paths of cellranger count output dirs for velocyto
+        cellranger_count_info
+        .splitCsv( header: true , sep: "\t" )
+        .map { line ->
+            tuple( line.sample_id, line.cellranger_dir )
+        }
+        .set { cellranger_count_out }
 
         // generate cellranger aggr input csv file
         CELLRANGER_AGGR_INPUT_PR (
             sample_sheet, 
-            cellranger_count_out,
+            cellranger_count_info,
             outdir,
-        )
-        cellranger_aggr_input = CELLRANGER_AGGR_INPUT_PR.out.cellranger_aggr_input.collectFile (
-            name: "cellranger_aggr_input.csv", 
-            storeDir: "${outdir}/cellranger", 
-            keepHeader: true
         )
 
         // generate cell barcode level metadata file
         CELLRANGER_METADATA_PR (
-            cellranger_aggr_input,
+            CELLRANGER_AGGR_INPUT_PR.out.cellranger_aggr_input,
             outdir,
         )
 
         // run cellranger aggr
         CELLRANGER_AGGR_PR ( 
-            cellranger_aggr_input,
+            CELLRANGER_AGGR_INPUT_PR.out.cellranger_aggr_input,
             cellranger_aggr_out_name,
             outdir,
             docker_enabled,

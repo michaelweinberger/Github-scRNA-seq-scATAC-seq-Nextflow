@@ -31,7 +31,31 @@ workflow {
     main:
 
         // Create output directory if it does not exist
+        if ( params.outdir ) {
+            outdir = params.outdir
+        } else {
+            outdir = workflow.projectDir / "out"
+        }
         new File ( params.outdir ).mkdirs()
+
+
+        log.info """\
+            ${params.manifest.name} v${params.manifest.version}
+            ====================================================
+            project name   : ${params.project}
+            input from     : ${params.input}
+            output to      : ${outdir}
+            clustering via : ${params.clustering_mode}
+            species        : ${params.species}
+            ---
+            run as         : ${workflow.commandLine}
+            started at     : ${workflow.start}
+            config files   : ${workflow.configFiles}
+            container      : ${workflow.containerEngine}:${workflow.container}
+            ====================================================
+            """
+         .stripIndent()
+
 
         // Create channel to collect software versions
         ch_versions = Channel.empty()
@@ -47,7 +71,7 @@ workflow {
                 params.genome_ucsc,
                 params.species_latin,
                 params.ensembl_version,
-                params.outdir,
+                outdir,
                 params.docker_enabled,
                 params.cellranger_module,
             )
@@ -56,8 +80,6 @@ workflow {
 
 
         if ( params.input ) {
-
-            println "Path to input sample sheet: $params.input (see nextflow.config file)"
 
             //
             // SUBWORKFLOW: Process input sample sheet
@@ -74,7 +96,7 @@ workflow {
                 params.input,
                 PIPELINE_INIT_WF.out.input,
                 params.project,
-                params.outdir,
+                outdir,
                 params.docker_enabled,
                 params.cellranger_module,
             )
@@ -104,7 +126,7 @@ workflow {
         //
         // SUBWORKFLOW: Cluster cells with Scanpy or Seurat
         //
-        if ( params.scRNA_analysis == "scanpy" ) {
+        if ( params.clustering_mode == "scanpy" ) {
             CLUSTER_SCANPY_WF (
                 cellranger_out_dir,
                 cellranger_metadata,
@@ -116,12 +138,12 @@ workflow {
                 params.n_pcs,
                 params.harmony_var,
                 params.leiden_res,
-                params.outdir,
+                outdir,
                 params.docker_enabled,
                 params.python_module,
             )
             ch_versions = ch_versions.mix(CLUSTER_SCANPY_WF.out.versions)
-        } else if ( params.scRNA_analysis == "seurat" ) {
+        } else if ( params.clustering_mode == "seurat" ) {
             CLUSTER_SEURAT_WF (
                 cellranger_out_dir,
                 cellranger_metadata,
@@ -133,13 +155,13 @@ workflow {
                 params.n_pcs,
                 params.harmony_var,
                 params.leiden_res,
-                params.outdir,
+                outdir,
                 params.docker_enabled,
                 params.r_module,
             )
             ch_versions = ch_versions.mix(CLUSTER_SEURAT_WF.out.versions)
         } else {
-            println "'scRNA_analysis' parameter needs to be: 'scanpy' or 'seurat'"
+            println "'clustering_mode' parameter needs to be: 'scanpy' or 'seurat'"
         }
 
 
@@ -147,32 +169,32 @@ workflow {
         // SUBWORKFLOW: Annotate scRNA-seq object
         //
         if ( params.cell_type_anno ) {
-            if ( params.scRNA_analysis == "scanpy" ) {
+            if ( params.clustering_mode == "scanpy" ) {
                 ANNOTATE_SCANPY_WF (
                     CLUSTER_SCANPY_WF.out.scrnaseq_object,
                     params.cell_type_anno,
                     params.project,
                     params.leiden_res,
-                    params.outdir,
+                    outdir,
                     params.docker_enabled,
                     params.python_module,
                 )
                 ch_versions = ch_versions.mix(ANNOTATE_SCANPY_WF.out.versions)
                 scrnaseq_object = ANNOTATE_SCANPY_WF.out.scrnaseq_object
-            } else if ( params.scRNA_analysis == "seurat" ) {
+            } else if ( params.clustering_mode == "seurat" ) {
                 ANNOTATE_SEURAT_WF (
                     CLUSTER_SEURAT_WF.out.scrnaseq_object,
                     params.cell_type_anno,
                     params.project,
                     params.leiden_res,
-                    params.outdir,
+                    outdir,
                     params.docker_enabled,
                     params.r_module,
                 )
                 ch_versions = ch_versions.mix(ANNOTATE_SEURAT_WF.out.versions)
                 scrnaseq_object = ANNOTATE_SEURAT_WF.out.scrnaseq_object
             } else {
-                println "'scRNA_analysis' parameter needs to be: 'scanpy' or 'seurat'"
+                println "'clustering_mode' parameter needs to be: 'scanpy' or 'seurat'"
             }
         } else {
             println "File specified with 'cell_type_anno' parameter not found: Skipping scRNA-seq cell type annotation"
@@ -204,7 +226,7 @@ workflow {
                 cellranger_metadata,
                 scrnaseq_object,
                 params.project,
-                params.outdir,
+                outdir,
                 params.docker_enabled,
                 params.samtools_module,
                 params.python_module,
@@ -214,4 +236,12 @@ workflow {
         } else {
             println "File specified with 'cell_type_anno' parameter not found: Skipping mRNA velocity analysis"
         }
+
+        // Write final versions file
+        ch_versions
+        .collectFile (
+            name: "versions.txt", 
+            storeDir: "${outdir}", 
+            keepHeader: false
+        )
 }
