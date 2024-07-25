@@ -4,16 +4,16 @@
 Use this Nextflow pipeline to analyse scRNA-seq data:
 - Genome alignment via [Cellranger](https://www.10xgenomics.com/support/software/cell-ranger/latest/tutorials/cr-tutorial-ct)
 - Clustering, marker identification, cell type annotation and visualisation via [Scanpy](https://scanpy.readthedocs.io/en/stable/)<sup>1</sup>  or [Seurat](https://satijalab.org/seurat/)<sup>2</sup>
-- Doublet removal with [DoubletDetection](https://github.com/JonathanShor/DoubletDetection?tab=readme-ov-file) (as part of Scanpy analysis) or [DoubletFinder](https://github.com/chris-mcginnis-ucsf/DoubletFinder)<sup>3</sup> (as part of Seurat analysis)
-- Sample integration via [Harmony](https://github.com/immunogenomics/harmony)<sup>4</sup>
-- mRNA velocity analysis via [velocyto](http://velocyto.org/velocyto.py/tutorial/cli.html#run10x-run-on-10x-chromium-samples)<sup>5</sup> and [scvelo](https://scvelo.readthedocs.io/en/stable/)<sup>6</sup>
+- Doublet removal with [DoubletDetection](https://github.com/JonathanShor/DoubletDetection?tab=readme-ov-file)<sup>3</sup> (as part of Scanpy analysis) or [DoubletFinder](https://github.com/chris-mcginnis-ucsf/DoubletFinder)<sup>4</sup> (as part of Seurat analysis)
+- Sample integration via [Harmony](https://github.com/immunogenomics/harmony)<sup>5</sup>
+- mRNA velocity analysis via [velocyto](http://velocyto.org/velocyto.py/tutorial/cli.html#run10x-run-on-10x-chromium-samples)<sup>6</sup> and [scvelo](https://scvelo.readthedocs.io/en/stable/)<sup>7</sup>
 
 
 
 ## Use
 
 1. Ensure Nextflow is installed
-As this pipeline uses [Nextflow](https://www.nextflow.io/docs/latest/index.html)<sup>7</sup> to manage analysis workflow, compute resources and software, Nextflow needs to be installed before running the pipeline. 
+As this pipeline uses [Nextflow](https://www.nextflow.io/docs/latest/index.html)<sup>8</sup> to manage analysis workflow, compute resources and software, Nextflow needs to be installed before running the pipeline. 
 
 2.  Clone the Github repository like 
 ```
@@ -38,7 +38,7 @@ When setting the `-resume` flag, the pipeline will resume from a previous run.
 
 ### Usage scenarios
 
-1.  Starting from fastq files
+1.  Starting from fastq files\
 If the `input` parameter is set in the nextflow.config file or on the command line, the workflow will start from fastq files. See below under "Parameters" for more information about `input` specifications.
 
 The workflow first generates Cellranger genome index files. Input fastq files are then aligned to the reference genome via the `cellranger count` command and the output from individual samples is combined via `cellranger aggr`. This is followed by doublet removal, clustering, data integration and cluster marker identification. The clustering mode as well as specific parameters related to clustering and data integration can be set in the nextflow.config file (see below).
@@ -46,9 +46,9 @@ The workflow first generates Cellranger genome index files. Input fastq files ar
 If no cell type annotation file is provided via the `cell_type_anno` parameter, the workflow stops at this point. You can inspect the output marker ".csv" or ".xlsx" files and the UMAP plots, and generate a cell type annotation ".csv" file as detailed below under "Parameters". Then add the file path in the nextflow.config file or add the `--cell_type_anno` flag on the command line. Run the pipeline again with the `-resume` flag.
 
 With the `cell_type_anno` parameter set, the workflow will annotate cell clusters and perform mRNA velocity analysis.
+\
 
-
-2. Starting from Cellranger outputs
+2. Starting from Cellranger outputs\
 To start the workflow from previously generated Cellranger output files instead of from fastq files, set the `input` parameter in the nextflow.config file to an empty string. Instead, specify the `cellranger_out_dir` and `metadata` parameters. These specify a file path to a directory containing cellranger outputs, and a tab delimited file with cell barcodes and metadata, respectively. Please see below under "Parameters" for more details.
 
 As with starting from fastq files, cell type annotation and mRNA velocity analysis will only be run if the `cell_type_anno` parameter is set in the nextflow.config file or if the `--cell_type_anno` flag is used on the command line.
@@ -60,9 +60,9 @@ Additionally, the `scRNA_velocity_file` parameter must be set for mRNA velocity 
 
 All parameters can be set on the command line with `--parameter_name` or in the `params` scope of the nextflow.config file located in the main pipeline directory.
 
-`project`   The name of the analysis project, defaults to "nf_scRNAseq_analysis".
+*`project`   The name of the analysis project, defaults to "nf_scRNAseq_analysis".
 
-`outdir`    The name of the directory to save pipeline outputs to, defaults to "/out" in the main pipeline directory.
+*`outdir`    The name of the directory to save pipeline outputs to, defaults to "/out" in the main pipeline directory.\
             Within this directory, outputs from individual parts of the pipeline are written to different subdirectories:
             - "genomes" for Cellranger genome index files
             - "cellranger" for Cellranger mapping outputs
