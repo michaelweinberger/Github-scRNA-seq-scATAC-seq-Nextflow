@@ -81,15 +81,17 @@ Parameters specific to starting from fastq files:
             - The second column of the sample sheet must be named "fastq_dir" and contain the file paths to directories with fastq files to be analysed.\
             Fastq files of multiple samples may be located within the same directory.
 
-\
-            Set `cellranger_out_dir` and `metadata` instead of `input` to start the pipeline from previously computed Cellranger mapping results instead of fastq files.\ Make sure in this case that `input` is empty to prevent genome alignment from being run.\ Optionally set the `scRNA_velocity_file` parameter to run mRNA velocity analysis when starting from Cellranger outputs.
+Set `cellranger_out_dir` and `metadata` instead of `input` to start the pipeline from previously computed Cellranger mapping results instead of fastq files.\
+Make sure in this case that `input` is empty to prevent genome alignment from being run.\
+Optionally set the `scRNA_velocity_file` parameter to run mRNA velocity analysis when starting from Cellranger outputs.
 
 
 Parameters specific to starting from Cellranger output files:
 
-- `cellranger_out_dir`    The file path to a directory containing cellranger output "barcodes.tsv.gz", "features.tsv.gz" and "matrix.mtx.gz" files,\ typically a "/outs/count/filtered_feature_bc_matrix" directory.
+- `cellranger_out_dir`  The file path to a directory containing cellranger output "barcodes.tsv.gz", "features.tsv.gz" and "matrix.mtx.gz" files,\
+                        typically a "/outs/count/filtered_feature_bc_matrix" directory.
 
-- `metadata`      The file path to a tab delimited file containing\ 
+- `metadata`      The file path to a tab delimited file containing\
                 - a column named "barcode" of cell barcodes,\
                 - a column named "sample_id" of sample identifiers,\
                 - optional metadata columns\
@@ -97,32 +99,32 @@ Parameters specific to starting from Cellranger output files:
 
 - `scRNA_velocity_file`   Optional: The file path to a tab delimited file containing\
                         - a column named "sample_id" of sample identifiers,\
-                        - a column named "cellranger_count_dir" of file paths to directories containing  Cellranger count BAM files.\ 
+                        - a column named "cellranger_count_dir" of file paths to directories containing  Cellranger count BAM files.\
                         Each directory must be the direct parent directory of "/outs/possorted_genome_bam.bam", for example a `cellranger count` output directory.
-\
-                        Note: If the `input` parameter is not set, mRNA velocity analysis is only run if the `scRNA_velocity_file` parameter is set.
+
+Note: If the `input` parameter is not set, mRNA velocity analysis is only run if the `scRNA_velocity_file` parameter is set.
 
 
 Parameters related to scRNA-seq clustering:
 
-- `clustering_mode`   Clustering analysis mode, can be one of: "scanpy" or "seurat"\
-- `min_genes`         Minimum number of genes expressed for a cell to be kept in the dataset, defaults to 200\
-- `max_genes`         Maximum number of genes expressed for a cell to be kept in the dataset, defaults to 2500\
-- `max_perc_mt`       Maximum percentage of mitochondrial reads for a cell to be kept in the dataset, defaults to 5\
-- `min_cells`         Minimum number of cells for a gene to be expressed in to be kept in the dataset, defaults to 3\
-- `n_pcs`             Number of principal components to be computed, defaults to 30\
-- `harmony_var`       Name of the metadata column to use for Harmony data integration, defaults to ""\
+- `clustering_mode`   Clustering analysis mode, can be one of: "scanpy" or "seurat"
+- `min_genes`         Minimum number of genes expressed for a cell to be kept in the dataset, defaults to 200
+- `max_genes`         Maximum number of genes expressed for a cell to be kept in the dataset, defaults to 2500
+- `max_perc_mt`       Maximum percentage of mitochondrial reads for a cell to be kept in the dataset, defaults to 5
+- `min_cells`         Minimum number of cells for a gene to be expressed in to be kept in the dataset, defaults to 3
+- `n_pcs`             Number of principal components to be computed, defaults to 30
+- `harmony_var`       Name of the metadata column to use for Harmony data integration, defaults to ""
 - `leiden_res`        Resolution of cell clustering, defaults to 0.4
 
 
 Parameters related to scRNA-seq annotation and mRNA velocity analysis:
 
-- `cell_type_anno`    The file path to a ".csv" file containing\ 
+- `cell_type_anno`    The file path to a ".csv" file containing\
                     - a column named "cluster" of cell cluster numbers\
                     - a column named "cell_type" of cell type annotations\
                     - an optional column named "order" of integers indicating the order in which cell types should appear in UMAP plot legends
-\
-                    Note: scRNA-seq annotation and mRNA velocity analysis are only run if the `cell_type_anno` parameter is set.
+
+Note: scRNA-seq annotation and mRNA velocity analysis are only run if the `cell_type_anno` parameter is set.
 
 
 ### Profiles
@@ -131,10 +133,11 @@ Multiple parameters can be bundled into profiles. These are defined in the `prof
 Additional executor or genome profiles can be added in the nextflow.config file.
 
 
-
 Pre-defined executor profiles are:
 
-- `HPC_no_docker`   Use for pipeline execution on a high performance cluster without using Docker.
+- HPC_no_docker
+
+Use for pipeline execution on a high performance cluster without using Docker.
 
 Pre-defined process options:\
 `executor = "slurm"`\
@@ -148,13 +151,15 @@ Pre-defined parameters:\
 `cellranger_module = "cellranger/7.2.0"`    -> Name of the Cellranger software module to load if Docker is disabled\
 `samtools_module   = "samtools/1.17"`       -> Name of the Samtools software module to load if Docker is disabled\
 `python_module     = "python-cbrg"`         -> Name of the Python software module to load if Docker is disabled\
-`r_module          = "R-cbrg"`              -> Name of the R software module to load if Docker is disabled\
+`r_module          = "R-cbrg"`              -> Name of the R software module to load if Docker is disabled
 
 Pre-defined Docker options:\
 `docker.enabled = false`
 
 
-- `HPC_docker`   Use for pipeline execution on a high performance cluster that allows the use of Docker.
+- HPC_docker
+
+Use for pipeline execution on a high performance cluster that allows the use of Docker.
 
 Pre-defined process options:\
 `executor = "slurm"`\
@@ -164,7 +169,7 @@ Pre-defined process options:\
 `cpus     = 30`
 
 Pre-defined parameters:\
-`docker_enabled    = true`\   
+`docker_enabled    = true`\
 `cellranger_module = "none"`\
 `samtools_module   = "none"`\
 `python_module     = "none"`\
@@ -175,10 +180,12 @@ Pre-defined Docker options:\
 `docker.runOptions = '-u $(id -u):$(id -g)'`
 
 
-- `standard`     Use for local pipeline execution.
+- standard
+
+Use for local pipeline execution.
 
 Pre-defined parameters:\
-`docker_enabled    = true`\   
+`docker_enabled    = true`\
 `cellranger_module = "none"`\
 `samtools_module   = "none"`\
 `python_module     = "none"`\
@@ -192,7 +199,7 @@ Pre-defined Docker options:\
 
 Pre-defined genome profiles are:
 
-- `human`
+- human
 
 Pre-defined parameters:\
 `species         = "human"`\
@@ -202,7 +209,7 @@ Pre-defined parameters:\
 `ensembl_version = "110"`           -> Ensembl genome browser release to use for file downloads
 
 
-- `mouse`
+- mouse
 
 Pre-defined parameters:\
 `species         = "mouse"`\
@@ -212,7 +219,7 @@ Pre-defined parameters:\
 `ensembl_version = "110"`
 
 
-- `zebrafish`
+- zebrafish
 
 Pre-defined parameters:\
 `species         = "zebrafish"`\
