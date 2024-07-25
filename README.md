@@ -10,6 +10,8 @@ Use this Nextflow pipeline to analyse scRNA-seq data:
 
 <br/>
 
+
+
 ## Use
 
 1. Ensure Nextflow is installed
@@ -37,6 +39,8 @@ When setting the `-resume` flag, the pipeline will resume from a previous run.
 
 <br/>
 
+
+
 ## Usage scenarios
 
 ### Starting from fastq files
@@ -60,6 +64,8 @@ As with starting from fastq files, cell type annotation and mRNA velocity analys
 Additionally, the `scRNA_velocity_file` parameter must be set for mRNA velocity analysis to be performed. This specifies the path to a file containing file paths of directories with Cellranger output BAM files, see below under "Parameters" for more details.
 
 <br/>
+
+
 
 ## Parameters
 
@@ -144,7 +150,7 @@ Multiple parameters can be bundled into profiles. These are defined in the `prof
 Additional executor or genome profiles can be added in the nextflow.config file.
 
 
-### Pre-defined executor profiles are:
+### Pre-defined executor profiles
 
 #### HPC_no_docker
 
@@ -167,7 +173,7 @@ Pre-defined parameters:\
 Pre-defined Docker options:\
 `docker.enabled = false`
 
-<br/>
+
 
 #### HPC_docker
 
@@ -191,7 +197,7 @@ Pre-defined Docker options:\
 `docker.enabled = true`\
 `docker.runOptions = '-u $(id -u):$(id -g)'`
 
-<br/>
+
 
 #### standard
 
@@ -210,7 +216,7 @@ Pre-defined Docker options:\
 
 <br/>
 
-### Pre-defined genome profiles are:
+### Pre-defined genome profiles
 
 #### human
 
@@ -220,7 +226,7 @@ Pre-defined Docker options:\
 `genome_ucsc     = "hg38"`          -> Genome name used in UCSC genome browser\
 `ensembl_version = "110"`           -> Ensembl genome browser release to use for file downloads
 
-<br/>
+
 
 #### mouse
 
@@ -230,7 +236,7 @@ Pre-defined Docker options:\
 `genome_ucsc     = "mm39"`\
 `ensembl_version = "110"`
 
-<br/>
+
 
 #### zebrafish
 
@@ -239,6 +245,8 @@ Pre-defined Docker options:\
 `genome          = "GRCz11"`\
 `genome_ucsc     = "danRer11"`\
 `ensembl_version = "110"`
+
+<br/>
 
 
 
