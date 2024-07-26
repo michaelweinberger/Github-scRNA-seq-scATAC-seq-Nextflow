@@ -63,13 +63,13 @@ process CLUSTER_SCANPY_PR {
                 -r "$leiden_res"
 
     echo "${task.process}:" > versions.txt
-        python --version >> versions.txt
-        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" >> versions.txt
-        python -c "import scanpy.external; print(f'scanpy.external,{scanpy.external.__version__}')" >> versions.txt
-        python -c "import anndata; print(f'anndata,{anndata.__version__}')" >> versions.txt
-        python -c "import doubletdetection; print(f'doubletdetection,{doubletdetection.__version__}')" >> versions.txt
-        python -c "import numpy; print(f'numpy,{numpy.__version__}')" >> versions.txt
-        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
+        python --version | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scanpy.external; print(f'scanpy.external,{scanpy.external.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import anndata; print(f'anndata,{anndata.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import doubletdetection; print(f'doubletdetection,{doubletdetection.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import numpy; print(f'numpy,{numpy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 

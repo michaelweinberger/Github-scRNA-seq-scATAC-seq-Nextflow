@@ -89,19 +89,16 @@ All parameters can be set on the command line with `--parameter_name` or in the 
 - `input`     The file path to an input ".txt" (tab delimited) or ".csv" file containing sample information.\
             - The first column of the sample sheet must be named "sample_id" and contain sample-specific identifiers that also are prefixes in the corresponding fastq file names.\
             For example: Put "sample_x" as sample ID if your fastq files are named "sample_x_S2_L001_I1_001.fastq.gz", "sample_x_S2_L001_R1_001.fastq.gz", "sample_x_S2_L001_R2_001.fastq.gz" etc.\
-            - The second column of the sample sheet must be named "fastq_dir" and contain the file paths to directories with fastq files to be analysed.\
-            Fastq files of multiple samples may be located within the same directory.
+            - The second column of the sample sheet must be named "fastq_dir" and contain the file paths to directories with fastq files to be analysed. Fastq files of multiple samples may be located within the same directory.
 
-Set `cellranger_out_dir` and `metadata` instead of `input` to start the pipeline from previously computed Cellranger mapping results instead of fastq files.\
-Make sure in this case that `input` is empty to prevent genome alignment from being run.\
+NOTE: Set `cellranger_out_dir` and `metadata` instead of `input` to start the pipeline from previously computed Cellranger mapping results instead of fastq files. Make sure in this case that `input` is empty to prevent genome alignment from being run.\
 Optionally set the `scRNA_velocity_file` parameter to run mRNA velocity analysis when starting from Cellranger outputs.
 
 <br/>
 
 ### Parameters specific to starting from Cellranger output files:
 
-- `cellranger_out_dir`  The file path to a directory containing cellranger output "barcodes.tsv.gz", "features.tsv.gz" and "matrix.mtx.gz" files,\
-                        typically a "/outs/count/filtered_feature_bc_matrix" directory.
+- `cellranger_out_dir`  The file path to a directory containing cellranger output "barcodes.tsv.gz", "features.tsv.gz" and "matrix.mtx.gz" files, typically a "/outs/count/filtered_feature_bc_matrix" directory.
 
 - `metadata`      The file path to a tab delimited file containing\
                 - a column named "barcode" of cell barcodes,\
@@ -111,10 +108,9 @@ Optionally set the `scRNA_velocity_file` parameter to run mRNA velocity analysis
 
 - `scRNA_velocity_file`   Optional: The file path to a tab delimited file containing\
                         - a column named "sample_id" of sample identifiers,\
-                        - a column named "cellranger_count_dir" of file paths to directories containing  Cellranger count BAM files.\
-                        Each directory must be the direct parent directory of "/outs/possorted_genome_bam.bam", for example a `cellranger count` output directory.
+                        - a column named "cellranger_count_dir" of file paths to directories containing  Cellranger count BAM files. Each directory must be the direct parent directory of "/outs/possorted_genome_bam.bam", for example a `cellranger count` output directory.
 
-Note: If the `input` parameter is not set, mRNA velocity analysis is only run if the `scRNA_velocity_file` parameter is set.
+NOTE: If the `input` parameter is not set, mRNA velocity analysis is only run if the `scRNA_velocity_file` parameter is set.
 
 <br/>
 
@@ -138,7 +134,7 @@ Note: If the `input` parameter is not set, mRNA velocity analysis is only run if
                     - a column named "cell_type" of cell type annotations\
                     - an optional column named "order" of integers indicating the order in which cell types should appear in UMAP plot legends
 
-Note: scRNA-seq annotation and mRNA velocity analysis are only run if the `cell_type_anno` parameter is set.
+NOTE: scRNA-seq annotation and mRNA velocity analysis are only run if the `cell_type_anno` parameter is set.
 
 <br/>
 
@@ -146,9 +142,9 @@ Note: scRNA-seq annotation and mRNA velocity analysis are only run if the `cell_
 
 ## Profiles
 
-Multiple parameters can be bundled into profiles. These are defined in the `profiles` scope in the nextflow.config file and can be invoked on the command line via the `-profile` flag.\
-Additional executor or genome profiles can be added in the nextflow.config file.
+Multiple parameters can be bundled into profiles. These are defined in the `profiles` scope in the nextflow.config file and can be invoked on the command line via the `-profile` flag. Additional executor or genome profiles can be added in the nextflow.config file.
 
+<br/>
 
 ### Pre-defined executor profiles
 

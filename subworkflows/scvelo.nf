@@ -48,8 +48,8 @@ process VELOCYTO_PR {
     mv "${cellranger_count_outdir}/velocyto/\${loom_prefix}.loom" "./${sample_id}.loom"
 
     echo "${task.process}:" > versions.txt
-        samtools --version | head -n 1 | sed 's/ /,/' >> versions.txt
-        python --version >> versions.txt
+        samtools --version | head -n 1 | sed 's/ /,/' | sed -e \$'s/^/\t/' >> versions.txt
+        python --version | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 
@@ -88,9 +88,9 @@ process MERGE_LOOM_PR {
                              -o "\$PWD"
 
     echo "${task.process}:" > versions.txt
-        python --version >> versions.txt
-        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" >> versions.txt
-        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
+        python --version | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 
@@ -132,10 +132,10 @@ process EXPORT_SEURAT_DATA_PR {
                                               project_name="$out_name"
 
     echo "${task.process}:" > versions.txt
-        R --version | head -n 1 >> versions.txt
-        R -e "library(Matrix); print(paste('Matrix', packageVersion('Matrix')))" | grep '[1]' | tail -n 1 >> versions.txt
-        R -e "library(patchwork); print(paste('patchwork', packageVersion('patchwork')))" | grep '[1]' | tail -n 1 >> versions.txt
-        R -e "library(Seurat); print(paste('Seurat', packageVersion('Seurat')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R --version | head -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(Matrix); print(paste('Matrix', packageVersion('Matrix')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(patchwork); print(paste('patchwork', packageVersion('patchwork')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(Seurat); print(paste('Seurat', packageVersion('Seurat')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 
@@ -180,13 +180,13 @@ process CONSTRUCT_ANNDATA_PR {
                                  -n "$out_name"
 
     echo "${task.process}:" > versions.txt
-        python --version >> versions.txt
-        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" >> versions.txt
-        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" >> versions.txt
-        python -c "import anndata; print(f'anndata,{anndata.__version__}')" >> versions.txt
-        python -c "import scipy; print(f'scipy,{scipy.__version__}')" >> versions.txt
-        python -c "import numpy; print(f'numpy,{numpy.__version__}')" >> versions.txt
-        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
+        python --version | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import anndata; print(f'anndata,{anndata.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scipy; print(f'scipy,{scipy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import numpy; print(f'numpy,{numpy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 
@@ -230,11 +230,11 @@ process SCVELO_PR {
                 -n "$out_name"
 
     echo "${task.process}:" > versions.txt
-        python --version >> versions.txt
-        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" >> versions.txt
-        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" >> versions.txt
-        python -c "import numpy; print(f'numpy,{numpy.__version__}')" >> versions.txt
-        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
+        python --version | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scvelo; print(f'scvelo,{scvelo.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import numpy; print(f'numpy,{numpy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 
@@ -305,10 +305,10 @@ workflow SCVELO_WF {
             )
             ch_versions    = ch_versions.mix(CONSTRUCT_ANNDATA_PR.out.versions)
             anndata_object = CONSTRUCT_ANNDATA_PR.out.anndata_object
-        } else if ( params.scRNA_analysis == "scanpy" ) {
+        } else if ( params.clustering_mode == "scanpy" ) {
             anndata_object = scrnaseq_object
         } else {
-            println "'scRNA_analysis' parameter needs to be: 'scanpy' or 'seurat'"
+            println "'clustering_mode' parameter needs to be: 'scanpy' or 'seurat'"
         }
 
         // Run Scvelo analysis

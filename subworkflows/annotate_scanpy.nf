@@ -19,13 +19,13 @@ process ANNOTATE_SCANPY_PR {
     container { ( "$docker_enabled" ) ? "michaelweinberger/python-3.11.9-scanpy:v1" : "" }
 
     input:
-    path (scrnaseq_object)
-    path (cell_type_annotation)
-    val  (out_name)
-    val  (leiden_res)
-    path (outdir)
-    val  (docker_enabled)
-    val  (python_module)
+    path ( scrnaseq_object )
+    path ( cell_type_annotation )
+    val  ( out_name )
+    val  ( leiden_res )
+    path ( outdir )
+    val  ( docker_enabled )
+    val  ( python_module )
     
     output:
     path ( "*${out_name}*.pdf"                                    ), emit: plots_pdf
@@ -46,17 +46,17 @@ process ANNOTATE_SCANPY_PR {
     5_scanpy_plotting.py -i "$scrnaseq_object" \
                          -a "$cell_type_annotation" \
                          -o "\$PWD" \
-                         -n "$out_name" \ 
+                         -n "$out_name" \
                          -r "$leiden_res"
 
     echo "${task.process}:" > versions.txt
-        python --version >> versions.txt
-        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" >> versions.txt
-        python -c "import anndata; print(f'anndata,{anndata.__version__}')" >> versions.txt
-        python -c "import numpy; print(f'numpy,{numpy.__version__}')" >> versions.txt
-        python -c "import pandas; print(f'pandas,{pandas.__version__}')" >> versions.txt
-        python -c "import matplotlib; print(f'matplotlib,{matplotlib.__version__}')" >> versions.txt
-        python -c "import seaborn; print(f'seaborn,{seaborn.__version__}')" >> versions.txt
+        python --version | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import scanpy; print(f'scanpy,{scanpy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import anndata; print(f'anndata,{anndata.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import numpy; print(f'numpy,{numpy.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import pandas; print(f'pandas,{pandas.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import matplotlib; print(f'matplotlib,{matplotlib.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
+        python -c "import seaborn; print(f'seaborn,{seaborn.__version__}')" | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 

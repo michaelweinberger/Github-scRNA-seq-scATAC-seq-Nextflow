@@ -1,12 +1,11 @@
 cluster,cell_type,order
-0,Macrophage,3
-1,Fibroblast,8
-2,Monocyte,2
+0,Monocyte,2
+1,Fibroblast,9
+2,Macrophage,3
 3,EC,1
-4,B-cell,4
-5,T-cell,5
-6,B-cell,4
-7,Neutrophil,6
-8,EC,1
-9,Macrophage,3
-10,Pericyte,7
+4,Dendritic cell,4
+5,T-cell,7
+6,Neutrophil,5
+7,B-cell,6
+8,Macrophage,3
+9,Pericyte,8

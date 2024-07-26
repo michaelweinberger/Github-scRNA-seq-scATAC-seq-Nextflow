@@ -49,13 +49,13 @@ process ANNOTATE_SEURAT_PR {
                                leiden_res="$leiden_res"
 
     echo "${task.process}:" > versions.txt
-        R --version | head -n 1 >> versions.txt
-        R -e "library(dplyr); print(paste('dplyr', packageVersion('dplyr')))" | grep '[1]' | tail -n 1 >> versions.txt
-        R -e "library(ggplot2); print(paste('ggplot2', packageVersion('ggplot2')))" | grep '[1]' | tail -n 1 >> versions.txt
-        R -e "library(patchwork); print(paste('patchwork', packageVersion('patchwork')))" | grep '[1]' | tail -n 1 >> versions.txt
-        R -e "library(pheatmap); print(paste('pheatmap', packageVersion('pheatmap')))" | grep '[1]' | tail -n 1 >> versions.txt
-        R -e "library(Seurat); print(paste('Seurat', packageVersion('Seurat')))" | grep '[1]' | tail -n 1 >> versions.txt
-        R -e "library(viridis); print(paste('viridis', packageVersion('viridis')))" | grep '[1]' | tail -n 1 >> versions.txt
+        R --version | head -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(dplyr); print(paste('dplyr', packageVersion('dplyr')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(ggplot2); print(paste('ggplot2', packageVersion('ggplot2')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(patchwork); print(paste('patchwork', packageVersion('patchwork')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(pheatmap); print(paste('pheatmap', packageVersion('pheatmap')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(Seurat); print(paste('Seurat', packageVersion('Seurat')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
+        R -e "library(viridis); print(paste('viridis', packageVersion('viridis')))" | grep '[1]' | tail -n 1 | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 

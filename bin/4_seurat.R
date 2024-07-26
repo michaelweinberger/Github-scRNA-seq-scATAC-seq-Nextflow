@@ -286,12 +286,12 @@ umap_seurat <- function(seurat_obj, out_dir, project_name, idents_list, labels=T
         ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_res_0_", resolution, ".", 
                                   file_type, sep=""), device=file_type, dpi=300)
       } else { 
-        if (is.character(seurat_obj[[ident]][1])) {
+        if (is.character(seurat_obj[[ident]][,]) || is.factor(seurat_obj[[ident]][,])) {
           gg <- DimPlot(seurat_obj, reduction = "umap", group.by=ident,
                         label = TRUE, pt.size = 0.4) + NoLegend()
           ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_", ident, ".", 
                                     file_type, sep=""), device=file_type, dpi=300)
-        } else if (is.numeric(seurat_obj[[ident]][1])) {
+        } else {
           gg <- FeaturePlot(seurat_obj, reduction = "umap", features=ident,
                             label = FALSE, pt.size = 0.4)
           ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_", ident, ".", 
@@ -306,12 +306,12 @@ umap_seurat <- function(seurat_obj, out_dir, project_name, idents_list, labels=T
         ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_res_0_", resolution, 
                                   "_no_labels.", file_type, sep=""), device=file_type, dpi=300, width=11)
       } else { 
-        if (is.character(seurat_obj[[ident]][1]))  {
+        if (is.character(seurat_obj[[ident]][,]) || is.factor(seurat_obj[[ident]][,]))  {
           gg <- DimPlot(seurat_obj, reduction = "umap", group.by=ident,
                         label = FALSE, pt.size = 0.4)
           ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_", ident, "_no_labels.", 
                                     file_type, sep=""), device=file_type, dpi=300, width=11)
-        } else if (is.numeric(seurat_obj[[ident]][1])) {
+        } else {
           gg <- FeaturePlot(seurat_obj, reduction = "umap", features=ident,
                             label = FALSE, pt.size = 0.4)
           ggsave(gg, filename=paste(out_dir, "/", project_name, "_umap_", ident, "_no_labels.", 

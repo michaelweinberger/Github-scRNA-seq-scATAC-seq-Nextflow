@@ -429,6 +429,10 @@ else:
 
 # scanpy analysis
 if not os.path.isfile(f"{out_dir}/{out_name}_scRNAseq_analysed_no_doublets.h5ad"):
+    
+    if not harmony_var in adata.obs.columns:
+        harmony_var=None
+
     adata = scanpy_analysis(adata=adata, 
                             out_dir=out_dir, 
                             out_name=out_name,

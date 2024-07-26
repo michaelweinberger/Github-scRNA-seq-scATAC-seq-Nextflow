@@ -63,10 +63,8 @@ process CELLRANGER_COUNT_PR {
 
     printf "${sample_id}\t\${cellranger_dir}\n" >> cellranger_count_info.tsv
 
-    cat <<-END_VERSIONS > versions.txt
-    "${task.process}":
-        cellranger: \$(echo \$( cellranger --version 2>&1) | sed 's/^.*[^0-9]\\([0-9]*\\.[0-9]*\\.[0-9]*\\).*\$/\\1/' )
-    END_VERSIONS
+    echo "${task.process}:" > versions.txt
+        echo cellranger: "\$(cellranger --version 2>&1 | awk '{print \$(NF)}' )" | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 
@@ -106,7 +104,7 @@ process CELLRANGER_AGGR_INPUT_PR {
  * generate barcode metadata file
  */
 process CELLRANGER_METADATA_PR {
-    debug true
+    debug false
     publishDir (
         "${outdir}/cellranger", 
         pattern: "", 
@@ -169,10 +167,8 @@ process CELLRANGER_AGGR_PR {
     cellranger aggr --id="$out_name" \
 	--csv="$cellranger_aggr_input_csv"
 
-    cat <<-END_VERSIONS > versions.txt
-    "${task.process}":
-        cellranger: \$(echo \$( cellranger --version 2>&1) | sed 's/^.*[^0-9]\\([0-9]*\\.[0-9]*\\.[0-9]*\\).*\$/\\1/' )
-    END_VERSIONS
+    echo "${task.process}:" > versions.txt
+        echo cellranger: "\$(cellranger --version 2>&1 | awk '{print \$(NF)}' )" | sed -e \$'s/^/\t/' >> versions.txt
     """
 }
 

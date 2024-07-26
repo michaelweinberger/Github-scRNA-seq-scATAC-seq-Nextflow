@@ -313,7 +313,8 @@ seurat_obj <- annotate_seurat(seurat_obj=seurat_obj, out_dir=out_dir, project_na
 # re-level cell type annotation
 if ("order" %in% colnames(annotation_df)) {
   annotation_df <- annotation_df[order(annotation_df$order),]
-  seurat_obj@active.ident <- factor(seurat_obj@active.ident, levels = unique(annotation_df$cell_type))
+  seurat_obj$cell_type <- factor(seurat_obj$cell_type, levels = unique(annotation_df$cell_type))
+  Idents(seurat_obj) <- seurat_obj$cell_type
 }
 
 
