@@ -166,23 +166,23 @@ else:
 
 
 # save object with entire count matrix for scVI integration
-if not os.path.isfile(f"{out_dir}/{out_name}_scRNAseq_no_doublets_annotated_scVI.h5ad"):
-
-    # read in dataset with count matrix containing all genes
-    adata_1 = sc.read_h5ad(f"{out_dir}/{out_name}.h5ad")
-    adata_1.obs = adata_1.obs[['barcode']]
-    
-    # add metadata of analysed dataset
-    tmp_df = adata_1.obs.merge(adata.obs, on='barcode', how='left', sort=False)
-    tmp_df.index = tmp_df['barcode']
-    check_order = adata_1.obs.index.equals(tmp_df.index)
-    print(f"{out_name} .obs order after including metadata matches: {check_order}")
-    adata_1.obs = tmp_df
-    adata_1.obs.index.name = None
-    adata_1 = adata_1[adata_1.obs['cell_type'].notna()]
-    
-    # save final dataset
-    adata_1.write(f"{out_dir}/{out_name}_scRNAseq_no_doublets_annotated_scVI.h5ad", compression='gzip')
+#if not os.path.isfile(f"{out_dir}/{out_name}_scRNAseq_no_doublets_annotated_scVI.h5ad"):
+#
+#    # read in dataset with count matrix containing all genes
+#    adata_1 = sc.read_h5ad(f"{out_dir}/{out_name}.h5ad")
+#    adata_1.obs = adata_1.obs[['barcode']]
+#    
+#    # add metadata of analysed dataset
+#    tmp_df = adata_1.obs.merge(adata.obs, on='barcode', how='left', sort=False)
+#    tmp_df.index = tmp_df['barcode']
+#    check_order = adata_1.obs.index.equals(tmp_df.index)
+#    print(f"{out_name} .obs order after including metadata matches: {check_order}")
+#    adata_1.obs = tmp_df
+#    adata_1.obs.index.name = None
+#    adata_1 = adata_1[adata_1.obs['cell_type'].notna()]
+#    
+#    # save final dataset
+#    adata_1.write(f"{out_dir}/{out_name}_scRNAseq_no_doublets_annotated_scVI.h5ad", compression='gzip')
     
     
     

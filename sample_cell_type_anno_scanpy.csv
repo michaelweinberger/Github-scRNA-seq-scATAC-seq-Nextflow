@@ -8,4 +8,5 @@ cluster,cell_type,order
 6,Neutrophil,5
 7,B-cell,6
 8,Macrophage,3
-9,Pericyte,8
+9,Macrophage,3
+10,Pericyte,8

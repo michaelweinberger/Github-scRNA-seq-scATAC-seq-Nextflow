@@ -13,7 +13,7 @@ nextflow.enable.dsl = 2
  * annotate cell types in Scanpy object
  */
 process ANNOTATE_SCANPY_PR {
-    debug true
+    debug false
     publishDir "${outdir}/scanpy", pattern: "", mode: "copy", saveAs: { filename -> "${filename}" }
 
     container { ( "$docker_enabled" ) ? "michaelweinberger/python-3.11.9-scanpy:v1" : "" }
@@ -28,12 +28,11 @@ process ANNOTATE_SCANPY_PR {
     val  ( python_module )
     
     output:
-    path ( "*${out_name}*.pdf"                                    ), emit: plots_pdf
-    path ( "*${out_name}*.png"                                    ), emit: plots_png
-    path ( "${out_name}_obs.csv"                                  ), emit: cell_metadata_csv
-    path ( "${out_name}_scRNAseq_no_doublets_annotated.h5ad"      ), emit: scrnaseq_object
-    path ( "${out_name}_scRNAseq_no_doublets_annotated_scVI.h5ad" ), emit: scrnaseq_scvi_object
-    path ( "versions.txt"                                         ), emit: versions
+    path ( "*${out_name}*.pdf"                               ), emit: plots_pdf, optional: true
+    path ( "*${out_name}*.png"                               ), emit: plots_png, optional: true
+    path ( "${out_name}_obs.csv"                             ), emit: cell_metadata_csv
+    path ( "${out_name}_scRNAseq_no_doublets_annotated.h5ad" ), emit: scrnaseq_object
+    path ( "versions.txt"                                    ), emit: versions
 
     script:
     """
@@ -92,5 +91,4 @@ workflow ANNOTATE_SCANPY_WF {
     emit:
         versions             = ch_versions
         scrnaseq_object      = ANNOTATE_SCANPY_PR.out.scrnaseq_object
-        scrnaseq_scvi_object = ANNOTATE_SCANPY_PR.out.scrnaseq_scvi_object
 }

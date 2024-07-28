@@ -75,7 +75,7 @@ workflow {
                 params.docker_enabled,
                 params.cellranger_module,
             )
-            ch_versions = ch_versions.mix(CELLRANGER_REF_WF.out.versions)
+            ch_versions = ch_versions.unique().mix(CELLRANGER_REF_WF.out.versions)
         }
 
 
@@ -100,7 +100,7 @@ workflow {
                 params.docker_enabled,
                 params.cellranger_module,
             )
-            ch_versions = ch_versions.mix(CELLRANGER_COUNT_AGGR_WF.out.versions)
+            ch_versions = ch_versions.unique().mix(CELLRANGER_COUNT_AGGR_WF.out.versions)
         } else {
             println "File specified by 'input' parameter not found: Skipping cellranger alignment."
         }
@@ -142,7 +142,7 @@ workflow {
                 params.docker_enabled,
                 params.python_module,
             )
-            ch_versions = ch_versions.mix(CLUSTER_SCANPY_WF.out.versions)
+            ch_versions = ch_versions.unique().mix(CLUSTER_SCANPY_WF.out.versions)
         } else if ( params.clustering_mode == "seurat" ) {
             CLUSTER_SEURAT_WF (
                 cellranger_out_dir,
@@ -159,7 +159,7 @@ workflow {
                 params.docker_enabled,
                 params.r_module,
             )
-            ch_versions = ch_versions.mix(CLUSTER_SEURAT_WF.out.versions)
+            ch_versions = ch_versions.unique().mix(CLUSTER_SEURAT_WF.out.versions)
         } else {
             println "'clustering_mode' parameter needs to be: 'scanpy' or 'seurat'"
         }
@@ -179,7 +179,7 @@ workflow {
                     params.docker_enabled,
                     params.python_module,
                 )
-                ch_versions = ch_versions.mix(ANNOTATE_SCANPY_WF.out.versions)
+                ch_versions = ch_versions.unique().mix(ANNOTATE_SCANPY_WF.out.versions)
                 scrnaseq_object = ANNOTATE_SCANPY_WF.out.scrnaseq_object
             } else if ( params.clustering_mode == "seurat" ) {
                 ANNOTATE_SEURAT_WF (
@@ -191,7 +191,7 @@ workflow {
                     params.docker_enabled,
                     params.r_module,
                 )
-                ch_versions = ch_versions.mix(ANNOTATE_SEURAT_WF.out.versions)
+                ch_versions = ch_versions.unique().mix(ANNOTATE_SEURAT_WF.out.versions)
                 scrnaseq_object = ANNOTATE_SEURAT_WF.out.scrnaseq_object
             } else {
                 println "'clustering_mode' parameter needs to be: 'scanpy' or 'seurat'"
@@ -232,7 +232,7 @@ workflow {
                 params.python_module,
                 params.r_module,
             )
-            ch_versions = ch_versions.mix(SCVELO_WF.out.versions)
+            ch_versions = ch_versions.unique().mix(SCVELO_WF.out.versions)
         } else {
             println "File specified with 'cell_type_anno' parameter not found: Skipping mRNA velocity analysis"
         }
