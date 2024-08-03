@@ -14,7 +14,7 @@ nextflow.enable.dsl = 2
  */
 process GENOME_FILES_PR {
     debug false
-    publishDir "${outdir}/genomes", pattern: "", mode: "copy", overwrite: false, saveAs: { filename -> "${filename}" }
+    publishDir "${outdir}/genomes", pattern: "", mode: "copy", overwrite: true, saveAs: { filename -> "${filename}" }
 
     container { ( "$docker_enabled" ) ? "michaelweinberger/ubuntu-22.04:v1" : "" }
     
@@ -48,7 +48,7 @@ process GENOME_FILES_PR {
  */
 process CELLRANGER_REF_PR {
     debug false
-    publishDir "${outdir}/genomes", pattern: "", mode: "copy", overwrite: false, saveAs: { filename -> "${filename}" }
+    publishDir "${outdir}/genomes", pattern: "", mode: "copy", overwrite: true, saveAs: { filename -> "${filename}" }
 
     container { ( "$docker_enabled" ) ? "litd/docker-cellranger:v7.2.0" : "" }
     
@@ -61,8 +61,8 @@ process CELLRANGER_REF_PR {
     val  ( cellranger_module )
     
     output:
-    path ( "cellranger_ref/refdata-cellranger-${genome}" ), emit: cellranger_index
-    path ( "versions.txt"                                ), emit: versions
+    path ( "refdata-cellranger-${genome}" ), emit: cellranger_index
+    path ( "versions.txt"                 ), emit: versions
 
     script:
     """
@@ -82,7 +82,9 @@ process CELLRANGER_REF_PR {
         --genome="refdata-cellranger-${genome}" \
         --fasta="${genome_fasta}" \
         --genes="${genome}.filtered.gtf" \
-        --output-dir="\${PWD}/cellranger_ref"
+        --output-dir="\${PWD}/refdata-cellranger-${genome}"
+
+    gunzip "refdata-cellranger-${genome}/genes/genes.gtf.gz"
 
     echo "${task.process}:" > versions.txt
         echo cellranger: "\$(cellranger --version 2>&1 | awk '{print \$(NF)}' )" | sed -e \$'s/^/\t/' >> versions.txt
