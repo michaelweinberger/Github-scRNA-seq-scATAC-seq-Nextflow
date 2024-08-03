@@ -28,10 +28,10 @@ process GENOME_FILES_PR {
     val  ( docker_enabled )
     
     output:
-    path ( "refdata-*"          ), emit: cellranger_index, optional: true
-    path ( "${genome}.fa"       ), emit: genome_fasta, optional: true
-    path ( "${genome}.gtf"      ), emit: genome_gtf, optional: true
-    path ( "${genome}_rmsk.txt" ), emit: genome_repeat_mask, optional: true
+    path ( "refdata-*"                        ), emit: cellranger_index, optional: true
+    path ( "${genome}.fa"                     ), emit: genome_fasta, optional: true
+    path ( "${genome}.${ensembl_version}.gtf" ), emit: genome_gtf, optional: true
+    path ( "${genome}_rmsk.txt"               ), emit: genome_repeat_mask, optional: true
 
     script:
     """
@@ -61,8 +61,8 @@ process CELLRANGER_REF_PR {
     val  ( cellranger_module )
     
     output:
-    path ( "refdata-*"    ), emit: cellranger_index
-    path ( "versions.txt" ), emit: versions
+    path ( "cellranger_ref/refdata-cellranger-${genome}" ), emit: cellranger_index
+    path ( "versions.txt"                                ), emit: versions
 
     script:
     """
@@ -82,7 +82,7 @@ process CELLRANGER_REF_PR {
         --genome="refdata-cellranger-${genome}" \
         --fasta="${genome_fasta}" \
         --genes="${genome}.filtered.gtf" \
-        --output-dir="\$PWD"
+        --output-dir="\${PWD}/cellranger_ref"
 
     echo "${task.process}:" > versions.txt
         echo cellranger: "\$(cellranger --version 2>&1 | awk '{print \$(NF)}' )" | sed -e \$'s/^/\t/' >> versions.txt
